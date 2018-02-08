@@ -17,7 +17,7 @@ options.register('runNum',
                  VarParsing.VarParsing.varType.int,
                  "Run number")
 options.register('eventsPerJob',
-                 200,
+                 10000,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "The number of events (in each file)")
@@ -28,6 +28,16 @@ options.register('idxJob',
                  "The index of this root file")
 
 options.parseArguments()
+
+# Insert Cosmic Stand topology: A , B , C , P5
+CosmicStandTopo = 'A'
+
+# Insert the type S or L of the superchambers in 15 positions: frontal view
+SuperChType = ['L','L','L',\
+	       	   'L','L','L',\
+	       	   'L','L','L',\
+	       	   'L','L','L',\
+	      	   'L','L','L']
 
 from Configuration.StandardSequences.Eras import eras
 
@@ -47,41 +57,67 @@ process.load('IOMC.EventVertexGenerators.VtxSmearedRealistic50ns13TeVCollision_c
 process.load('GeneratorInterface.Core.genFilterSummary_cff')
 process.load('Configuration.StandardSequences.SimIdeal_cff')
 process.load('Configuration.StandardSequences.Digi_cff')
-#process.load('Configuration.StandardSequences.SimL1Emulator_cff')
-#process.load('Configuration.StandardSequences.DigiToRaw_cff')
-#process.load('Configuration.StandardSequences.RawToDigi_cff')
-#process.load('Configuration.StandardSequences.L1Reco_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('SimMuon.GEMDigitizer.muonGEMDigi_cff')
 process.load('RecoLocalMuon.GEMRecHit.gemLocalReco_cff')
-#process.load('Configuration.StandardSequences.Validation_cff')
 
-process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c1_r1.xml')
-process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c1_r2.xml')
-process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c1_r3.xml')
-process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c1_r4.xml')
-process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c1_r5.xml')
-process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c2_r1.xml')
-process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c2_r2.xml')
-process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c2_r3.xml')
-process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c2_r4.xml')
-process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c2_r5.xml')
-process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c3_r1.xml')
-process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c3_r2.xml')
-process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c3_r3.xml')
-process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c3_r4.xml')
-process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c3_r5.xml')
+# DEFINITION OF THE SUPERCHAMBERS INSIDE THE STAND
 
+# COLUMN 1
+if SuperChType[0]=='L' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c1_r1.xml')
+if SuperChType[0]=='S' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11S_c1_r1.xml')
+
+if SuperChType[1]=='L' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c1_r2.xml')
+if SuperChType[1]=='S' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11S_c1_r2.xml')
+
+if SuperChType[2]=='L' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c1_r3.xml')
+if SuperChType[2]=='S' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11S_c1_r3.xml')
+
+if SuperChType[3]=='L' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c1_r4.xml')
+if SuperChType[3]=='S' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11S_c1_r4.xml')
+
+if SuperChType[4]=='L' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c1_r5.xml')
+if SuperChType[4]=='S' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11S_c1_r5.xml')
+
+# COLUMN 2
+if SuperChType[5]=='L' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c2_r1.xml')
+if SuperChType[5]=='S' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11S_c2_r1.xml')
+
+if SuperChType[6]=='L' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c2_r2.xml')
+if SuperChType[6]=='S' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11S_c2_r2.xml')
+
+if SuperChType[7]=='L' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c2_r3.xml')
+if SuperChType[7]=='S' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11S_c2_r3.xml')
+
+if SuperChType[8]=='L' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c2_r4.xml')
+if SuperChType[8]=='S' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11S_c2_r4.xml')
+
+if SuperChType[9]=='L' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c2_r5.xml')
+if SuperChType[9]=='S' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11S_c2_r5.xml')
+
+# COLUMN 3
+if SuperChType[10]=='L' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c3_r1.xml')
+if SuperChType[10]=='S' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11S_c3_r1.xml')
+
+if SuperChType[11]=='L' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c3_r2.xml')
+if SuperChType[11]=='S' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11S_c3_r2.xml')
+
+if SuperChType[12]=='L' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c3_r3.xml')
+if SuperChType[12]=='S' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11S_c3_r3.xml')
+
+if SuperChType[13]=='L' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c3_r4.xml')
+if SuperChType[13]=='S' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11S_c3_r4.xml')
+
+if SuperChType[14]=='L' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c3_r5.xml')
+if SuperChType[14]=='S' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11S_c3_r5.xml')
+	
+# Config importation & settings
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.eventsPerJob))
-
 import configureRun_cfi as runConfig
-
 nIdxJob = int(options.idxJob)
-
 strOutput = "out_reco_MC.root" if nIdxJob >= 0 else runConfig.OutputFileName
-
 if nIdxJob < 0: nIdxJob = 0
 
 # Input source
@@ -111,10 +147,7 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     eventAutoFlushCompressedSize = cms.untracked.int32(10485760),
-    #fileName = cms.untracked.string('out_reco_MC.root'),
-    #fileName = cms.untracked.string('file:'+runConfig.OutputFileName),
     fileName = cms.untracked.string('file:'+strOutput),
-    #outputCommands = process.FEVTDEBUGHLTEventContent.outputCommands,
     outputCommands = cms.untracked.vstring( ('keep *')),
     splitLevel = cms.untracked.int32(0)
 )
@@ -123,14 +156,7 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
-## # Cosmic Muon generator
-## process.load("GeneratorInterface.CosmicMuonGenerator.CMSCGENproducer_cfi")
-## process.generator.MaxTheta = 84.
-## process.generator.ElossScaleFactor = 0.0
-## process.generator.TrackerOnly = True
-## process.generator.MinP = 100
-
-#process.genstepfilter.triggerConditions=cms.vstring("generation_step")
+# Cosmic Muon generator
 process.generator = cms.EDProducer("FlatRandomPtGunProducer",
     AddAntiParticle = cms.bool(True),
     PGunParameters = cms.PSet(
@@ -140,7 +166,7 @@ process.generator = cms.EDProducer("FlatRandomPtGunProducer",
         MaxPhi = cms.double(-3.141592),
         MinTheta = cms.double(0.0),
         MaxTheta = cms.double(1.5707963),
-        IsThetaFlat = cms.bool(True), # If 'True': theta distribution is flat. If 'False': theta distribution is a cos^2
+        IsThetaFlat = cms.bool(False), # If 'True': theta distribution is flat. If 'False': theta distribution is a cos^2
         PartID = cms.vint32(-13)
     ),
     Verbosity = cms.untracked.int32(0),
@@ -172,8 +198,8 @@ process.mix = cms.EDProducer("MixingModule",
         input = cms.VInputTag(cms.InputTag("g4SimHits")),
         makeCrossingFrame = cms.untracked.bool(True),
         type = cms.string('SimTrack')
-    ),        
-    )
+    ),
+)
 process.g4SimHits.UseMagneticField = cms.bool(False)
 process.simCastorDigis = cms.EDAlias()
 process.simEcalUnsuppressedDigis = cms.EDAlias()
@@ -202,7 +228,6 @@ process.GEMCosmicMuonForQC8 = cms.EDProducer("GEMCosmicMuonForQC8",
 process.GEMCosmicMuonForQC8.ServiceParameters.GEMLayers = cms.untracked.bool(True)
 process.GEMCosmicMuonForQC8.ServiceParameters.CSCLayers = cms.untracked.bool(False)
 process.GEMCosmicMuonForQC8.ServiceParameters.RPCLayers = cms.bool(False)
-#process.GEMCosmicMuonForQC8.ServiceParameters.UseMuonNavigation = cms.untracked.bool(False)
 
 fScale = 1.0
 
@@ -210,7 +235,6 @@ process.gemcrValidation = cms.EDAnalyzer('gemcrValidation',
     process.MuonServiceProxy,
     verboseSimHit = cms.untracked.int32(1),
     simInputLabel = cms.InputTag('g4SimHits',"MuonGEMHits"),
-    #simTrack = cms.InputTag('g4SimHits',"", "RECO"),
     genVtx = cms.InputTag("generator","unsmeared", "RECO"),
     recHitsInputLabel = cms.InputTag('gemRecHits'),
     tracksInputLabel = cms.InputTag('GEMCosmicMuonForQC8','','RECO'),
@@ -224,9 +248,6 @@ process.gemcrValidation = cms.EDAnalyzer('gemcrValidation',
     nBinGlobalZR = cms.untracked.vdouble(200,200,200,150,180,250),
     # st1 xmin, xmax, st2_short xmin, xmax, st2_long xmin, xmax, st1 ymin, ymax...
     RangeGlobalZR = cms.untracked.vdouble(564,572,786,794,786,802,110,260,170,350,100,350),
-    #nBinGlobalXY = cms.untracked.int32(720),
-    #detailPlot = cms.bool(True),
-    #detailPlot = cms.bool(False),
     maxClusterSize = cms.double(runConfig.maxClusterSize),
     minClusterSize = cms.double(runConfig.minClusterSize),
     maxResidual = cms.double(runConfig.maxResidual),
@@ -246,21 +267,12 @@ process.gemcrValidation = cms.EDAnalyzer('gemcrValidation',
 # Path and EndPath definitions
 process.generation_step = cms.Path(process.generator+process.pgen)
 process.simulation_step = cms.Path(process.psim)
-#process.L1simulation_step = cms.Path(process.SimL1Emulator)
-#process.digi2raw_step = cms.Path(process.DigiToRaw)
-#process.raw2digi_step = cms.Path(process.RawToDigi)
-#process.L1Reco_step = cms.Path(process.L1Reco)
 process.digitisation_step = cms.Path(process.pdigi)
-#process.reconstruction_step = cms.Path(process.reconstruction)
-#process.digitisation_step = cms.Path(process.muonGEMDigi)
 process.reconstruction_step    = cms.Path(process.gemLocalReco+process.GEMCosmicMuonForQC8)
-#process.reconstruction_step    = cms.Path(process.gemLocalReco)
 process.genfiltersummary_step = cms.EndPath(process.genFilterSummary)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.FEVTDEBUGHLToutput_step = cms.EndPath(process.FEVTDEBUGHLToutput)
-
 process.validation_step = cms.Path(process.gemcrValidation)
-
 process.digitisation_step.remove(process.simMuonME0Digis)
 process.digitisation_step.remove(process.simMuonME0ReDigis)
 process.digitisation_step.remove(process.simEcalTriggerPrimitiveDigis)
@@ -276,8 +288,7 @@ process.digitisation_step.remove(process.simMuonDTDigis)
 
 # Schedule definition
 process.schedule = cms.Schedule(process.generation_step,process.genfiltersummary_step,process.simulation_step,
-                                process.digitisation_step,#process.L1simulation_step,
-                                #process.digi2raw_step,process.raw2digi_step,#process.L1Reco_step,
+                                process.digitisation_step,
                                 process.reconstruction_step,
                                 process.validation_step,
                                 process.endjob_step,
@@ -305,15 +316,8 @@ process.gemSegments.dYclusBoxMax = cms.double(50.0)
 process.gemSegments.preClustering = cms.bool(False)
 process.gemSegments.preClusteringUseChaining = cms.bool(False)
 
-process.simMuonGEMDigis.averageEfficiency = cms.double(0.97)
-#process.simMuonGEMDigis.averageEfficiency = cms.double(1.00)
+process.simMuonGEMDigis.averageEfficiency = cms.double(0.98)
 process.simMuonGEMDigis.averageNoiseRate = cms.double(0.0)
 process.simMuonGEMDigis.doBkgNoise = cms.bool(False)
 process.simMuonGEMDigis.doNoiseCLS = cms.bool(False)
 process.simMuonGEMDigis.simulateElectronBkg = cms.bool(False)
-
-
-#process.SteppingHelixPropagatorAny.debug = cms.bool(True)
-#process.SteppingHelixPropagatorAny.sendLogWarning = cms.bool(True)
-#process.SteppingHelixPropagatorAny.useInTeslaFromMagField = cms.bool(False)
-#process.SteppingHelixPropagatorAny.useMagVolumes = cms.bool(False)

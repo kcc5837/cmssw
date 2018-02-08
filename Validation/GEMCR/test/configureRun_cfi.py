@@ -8,17 +8,18 @@ import csv,os
 #RAWFileName="/afs/cern.ch/work/d/dorney/CMS_GEM/Data/QC8/run000036_Test_TIF_2016-11-28.dat"
 #RAWFileName="/afs/cern.ch/work/d/dorney/CMS_GEM/Data/QC8/run000037_Test_TIF_2016-11-28.dat"
 #RAWFileName="run000044_Cosmics_TIF_2016-12-03.dat"
-RAWFileName="/afs/cern.ch/user/h/hyunyong/public/run000080_Cosmics_TIF_2016-12-05.dat"
+#RAWFileName="/afs/cern.ch/user/h/hyunyong/public/run000080_Cosmics_TIF_2016-12-05.dat"
 #RAWFileName="/afs/cern.ch/user/h/hyunyong/public/run000113_Cosmics_TIF_2016-12-07.dat"
 #RAWFileName="/afs/cern.ch/user/h/hyunyong/public/run000209_Cosmics_TIF_2016-12-13.dat"
-RAWFileName="/afs/cern.ch/user/h/hyunyong/public/run000192_Cosmics_TIF_2016-12-12_chunk_0.dat"
-RAWFileName="/afs/cern.ch/user/h/hyunyong/public/run000192_Cosmics_TIF_2016-12-12.dat"
+#RAWFileName="/afs/cern.ch/user/h/hyunyong/public/run000192_Cosmics_TIF_2016-12-12_chunk_0.dat"
+#RAWFileName="/afs/cern.ch/user/h/hyunyong/public/run000192_Cosmics_TIF_2016-12-12.dat"
 #RAWFileName="/afs/cern.ch/user/h/hyunyong/public/run000193_Cosmics_TIF_2016-12-12_chunk_0.dat"
 #RAWFileName="/afs/cern.ch/user/h/hyunyong/public/run000208_LatencyScan_TIF_2016-12-13.dat"
 #RAWFileName="/afs/cern.ch/user/h/hyunyong/public/run000186_LatencyScan_TIF_2016-12-12.dat"
 #RAWFileName="/afs/cern.ch/user/h/hyunyong/public/run000189_LatencyScan_TIF_2016-12-12.dat"
 #RAWFileName="/cms/scratch/quark2930/Work/gemcr/run000002_LocalRun_CERNP5_2017-06-17_chunk_0.dat"
-RAWFileName="/cms/scratch/quark2930/Work/gemcr/gemcr/src/Validation/GEMCR/test/run000002_LocalRun_CERNP5_2017-06-17.dat"
+#RAWFileName="/cms/scratch/quark2930/Work/gemcr/gemcr/src/Validation/GEMCR/test/run000002_LocalRun_CERNP5_2017-06-17.dat"
+RAWFileName="/afs/cern.ch/work/g/gmocelli/PhD/CRS/gemcrs/src/Validation/GEMCR/run000001_Dummy_Dummy_2018.dat"
 MaxEvents=-1
 #MaxEvents = os.path.getsize(RAWFileName) / 320
 
