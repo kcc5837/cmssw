@@ -40,6 +40,34 @@ FlatRandomPtGunProducer::~FlatRandomPtGunProducer()
    // no need to cleanup GenEvent memory - done in HepMCProduct
 }
 
+
+bool myIsMuonPassScint(double dVx, double dVy, double dVz, double dPx, double dPy, double dPz) {
+  // To test the drop-down of efficiency at edges, we can set the cut looser
+  double ScintilXMin = -1000.0;
+  double ScintilXMax =  1000.0;
+  double ScintilZMin =  -605.6;
+  double ScintilZMax =   950.0;
+  
+  double ScintilLowerY = -114.85;
+  double ScintilUpperY = 1540.15;
+  
+  double dTLower = ( ScintilLowerY - dVy ) / dPy;  
+  double dXLower = dVx + dTLower * dPx;
+  double dZLower = dVz + dTLower * dPz;
+  
+  double dTUpper = ( ScintilUpperY - dVy ) / dPy;
+  double dXUpper = dVx + dTUpper * dPx;
+  double dZUpper = dVz + dTUpper * dPz;
+  
+  if (( ScintilXMin <= dXLower && dXLower <= ScintilXMax && ScintilZMin <= dZLower && dZLower <= ScintilZMax ) &&
+      ( ScintilXMin <= dXUpper && dXUpper <= ScintilXMax && ScintilZMin <= dZUpper && dZUpper <= ScintilZMax ))
+  {
+    return true;
+  }
+  
+  else return false;
+}
+
 void FlatRandomPtGunProducer::produce(Event &e, const EventSetup& es) 
 {
    edm::Service<edm::RandomNumberGenerator> rng;
@@ -62,30 +90,71 @@ void FlatRandomPtGunProducer::produce(Event &e, const EventSetup& es)
    //
    // 1st, primary vertex
    //
-   HepMC::GenVertex* Vtx = new HepMC::GenVertex(HepMC::FourVector(0.,0.,0.));
+   //HepMC::GenVertex* Vtx = new HepMC::GenVertex(HepMC::FourVector(0.,0.,0.));
+   /*double dVx = CLHEP::RandFlat::shoot(engine, -1200.0, 1200.0) ;
+   double dVy = -100.0;
+   double dVz = CLHEP::RandFlat::shoot(engine, -650.0, 750.0) ;
+   HepMC::GenVertex* Vtx = new HepMC::GenVertex(HepMC::FourVector(dVx,dVy,dVz));*/
+   double dVx;
+   double dVy = 1540.15; // same Y as the upper scintillator
+   double dVz;
+   HepMC::GenVertex* Vtx = NULL;
 
    // loop over particles
    //
    int barcode = 1 ;
    for (unsigned int ip=0; ip<fPartIDs.size(); ++ip)
    {
-       double pt     = CLHEP::RandFlat::shoot(engine, fMinPt, fMaxPt) ;
-       double eta    = CLHEP::RandFlat::shoot(engine, fMinEta, fMaxEta) ;
-       double phi    = CLHEP::RandFlat::shoot(engine, fMinPhi, fMaxPhi) ;
+       double px, py, pz, mom;
+       double phi, theta;
+       int j = 0;
+       
+       while (j < 10000) // j < 10000 to avoid too long computational time
+       {
+
+         dVx = CLHEP::RandFlat::shoot(engine, -1000.0, 1000.0) ;
+         dVz = CLHEP::RandFlat::shoot(engine, -605.6, 950.0) ;
+         
+         mom   = CLHEP::RandFlat::shoot(engine, fMinPt, fMaxPt) ;
+         phi   = CLHEP::RandFlat::shoot(engine, fMinPhi, fMaxPhi) ;
+         theta = 0;
+
+         if (fIsThetaFlat)
+         {
+             theta  = CLHEP::RandFlat::shoot(engine, fMinTheta, fMaxTheta);
+         }
+         
+         if (!fIsThetaFlat)
+         {
+             double u = CLHEP::RandFlat::shoot(engine, 0.0, 0.785398); // u = Uniform[0;Pi/4]
+             theta = 0;
+             while(abs(u-(0.5*theta+0.25*sin(2*theta)))>0.000015)
+             {
+                 theta+=0.00001;
+             }             
+         }
+
+         px     =  mom*sin(theta)*cos(phi) ;
+         pz     =  mom*sin(theta)*sin(phi) ;
+         py     = -mom*cos(theta) ; // with the - sign, the muons are going downwards: falling from the sky
+
+         
+         if ( myIsMuonPassScint(dVx, dVy, dVz, px, py, pz) == true ) break; // muon passing through both the scintillators => valid: the loop can be stopped
+         
+         j++;
+         
+       }
+       
        int PartID = fPartIDs[ip] ;
        const HepPDT::ParticleData* 
           PData = fPDGTable->particle(HepPDT::ParticleID(abs(PartID))) ;
        double mass   = PData->mass().value() ;
-       double theta  = 2.*atan(exp(-eta)) ;
-       double mom    = pt/sin(theta) ;
-       double px     = pt*cos(phi) ;
-       double py     = pt*sin(phi) ;
-       double pz     = mom*cos(theta) ;
+       Vtx = new HepMC::GenVertex(HepMC::FourVector(dVx,dVy,dVz));
+
        double energy2= mom*mom + mass*mass ;
-       double energy = sqrt(energy2) ; 
+       double energy = sqrt(energy2) ;
        HepMC::FourVector p(px,py,pz,energy) ;
-       HepMC::GenParticle* Part = 
-           new HepMC::GenParticle(p,PartID,1);
+       HepMC::GenParticle* Part = new HepMC::GenParticle(p,PartID,1);
        Part->suggest_barcode( barcode ) ;
        barcode++ ;
        Vtx->add_particle_out(Part);
@@ -98,8 +167,7 @@ void FlatRandomPtGunProducer::produce(Event &e, const EventSetup& es)
 	  {
 	     APartID = PartID ;
 	  }	  
-	  HepMC::GenParticle* APart =
-	     new HepMC::GenParticle(ap,APartID,1);
+	  HepMC::GenParticle* APart = new HepMC::GenParticle(ap,APartID,1);
 	  APart->suggest_barcode( barcode ) ;
 	  barcode++ ;
 	  Vtx->add_particle_out(APart) ;
