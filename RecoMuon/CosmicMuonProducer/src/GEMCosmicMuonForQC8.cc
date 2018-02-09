@@ -36,13 +36,6 @@
 
 #include "RecoMuon/CosmicMuonProducer/interface/HeaderForQC8.h"
 
-  
-std::vector<double> g_vecChamType = {1,3, 0,0, 0,0, 0,0, 4,2, 
-                                     1,3, 0,0, 0,0, 0,0, 4,2, 
-                                     1,3, 0,0, 0,0, 0,0, 4,2};
- 
-
-
 using namespace std;
 
 class GEMCosmicMuonForQC8 : public edm::stream::EDProducer<> {
@@ -57,6 +50,8 @@ public:
   double minCLS;
   double trackChi2, trackResX, trackResY;
   double MulSigmaOnWindow;
+  std::vector<std::string> g_SuperChamType;
+  vector<double> g_vecChamType;
 private:
   int iev; // events through
   edm::EDGetTokenT<GEMRecHitCollection> theGEMRecHitToken;
@@ -77,6 +72,8 @@ GEMCosmicMuonForQC8::GEMCosmicMuonForQC8(const edm::ParameterSet& ps) : iev(0) {
   trackResX = ps.getParameter<double>("trackResX");
   trackResY = ps.getParameter<double>("trackResY");
   MulSigmaOnWindow = ps.getParameter<double>("MulSigmaOnWindow");
+  g_SuperChamType = ps.getParameter<vector<string>>("SupChType");
+  g_vecChamType = ps.getParameter<vector<double>>("SuperChSeedingLayers");
   theGEMRecHitToken = consumes<GEMRecHitCollection>(ps.getParameter<edm::InputTag>("gemRecHitLabel"));
   // register what this produces
   edm::ParameterSet serviceParameters = ps.getParameter<edm::ParameterSet>("ServiceParameters");
@@ -117,10 +114,12 @@ void GEMCosmicMuonForQC8::produce(edm::Event& ev, const edm::EventSetup& setup)
   vector<GEMChamber> gemChambers;
   
   const std::vector<const GEMSuperChamber*>& superChambers_ = mgeom->superChambers();   
-  for (auto sch : superChambers_){
+  for (auto sch : superChambers_)
+  {
     int n_lay = sch->nChambers();
-    for (int l=0;l<n_lay;l++){
-      gemChambers.push_back(*sch->chamber(l+1));
+    for (int l=0;l<n_lay;l++)
+    {
+      if (g_SuperChamType[l] == "S" || g_SuperChamType[l] == "L") gemChambers.push_back(*sch->chamber(l+1));
     }
   }
 

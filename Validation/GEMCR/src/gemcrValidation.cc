@@ -63,7 +63,8 @@ gemcrValidation::gemcrValidation(const edm::ParameterSet& cfg): GEMBaseValidatio
   trackResY = cfg.getParameter<double>("trackResY"); 
   trackResX = cfg.getParameter<double>("trackResX");
   MulSigmaOnWindow = cfg.getParameter<double>("MulSigmaOnWindow");
-  
+  SuperChamType = cfg.getParameter<vector<string>>("SupChType");
+  vecChamType = cfg.getParameter<vector<double>>("SuperChSeedingLayers");
   edm::ParameterSet smootherPSet = cfg.getParameter<edm::ParameterSet>("MuonSmootherParameters");
   theSmoother = new CosmicMuonSmoother(smootherPSet, theService);
   theUpdator = new KFUpdator();
@@ -82,10 +83,12 @@ void gemcrValidation::bookHistograms(DQMStore::IBooker & ibooker, edm::Run const
   if ( GEMGeometry_ == nullptr) return ;  
 
   const std::vector<const GEMSuperChamber*>& superChambers_ = GEMGeometry_->superChambers();   
-  for (auto sch : superChambers_){
+  for (auto sch : superChambers_)
+  {
     int n_lay = sch->nChambers();
-    for (int l=0;l<n_lay;l++){
-    	gemChambers.push_back(*sch->chamber(l+1));
+    for (int l=0;l<n_lay;l++)
+    {
+      if (SuperChamType[l] == "S" || SuperChamType[l] == "L") gemChambers.push_back(*sch->chamber(l+1));
     }
   }
   n_ch = gemChambers.size();
@@ -590,14 +593,6 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   bool bIsScint = isPassedScintillators(genGPos1, genGPos2);
   
   /// Tracking start
-  
-  vector<double> chamSetEff = {0,0, 0,0, 0,0, 0,0, 0,0,
-                               97.0,97.0, 97.0,97.0, 97.0,97.0, 97.0,97.0, 97.0,97.0,
-                               0,0, 0,0, 0,0, 0,0, 0,0};
-  
-  vector<double> vecChamType = {1,3, 0,0, 0,0, 0,0, 4,2, 
-                                1,3, 0,0, 0,0, 0,0, 4,2, 
-                                1,3, 0,0, 0,0, 0,0, 4,2};
   
   int fCha = 10;
   int lCha = 19;

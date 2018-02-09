@@ -29,15 +29,29 @@ options.register('idxJob',
 
 options.parseArguments()
 
-# Insert Cosmic Stand topology: A , B , C , P5
-CosmicStandTopo = 'A'
-
 # Insert the type S or L of the superchambers in 15 positions: frontal view
 SuperChType = ['L','L','L',\
 	       	   'L','L','L',\
 	       	   'L','L','L',\
 	       	   'L','L','L',\
 	      	   'L','L','L']
+
+# Calculation of SuperChSeedingLayers from SuperChType
+
+SuperChSeedingLayers = [1,1,1,\
+	       	  		    3,3,3,\
+	       	  		    
+	       	  		    0,0,0,\
+	       	  		    0,0,0,\
+	       	  		    
+	       	  		    0,0,0,\
+	       	  		    0,0,0,\
+	       	  		    
+	       	  		    0,0,0,\
+	       	  		    0,0,0,\
+	       	  		    
+	       	  		    4,4,4,\
+	       	  		    2,2,2]
 
 from Configuration.StandardSequences.Eras import eras
 
@@ -64,7 +78,7 @@ process.load('SimMuon.GEMDigitizer.muonGEMDigi_cff')
 process.load('RecoLocalMuon.GEMRecHit.gemLocalReco_cff')
 
 # DEFINITION OF THE SUPERCHAMBERS INSIDE THE STAND
-####
+
 # COLUMN 1
 if SuperChType[0]=='L' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11L_c1_r1.xml')
 if SuperChType[0]=='S' : process.XMLIdealGeometryESSource.geomXMLFiles.append('Geometry/MuonCommonData/data/cosmic1/gem11S_c1_r1.xml')
@@ -219,6 +233,8 @@ process.GEMCosmicMuonForQC8 = cms.EDProducer("GEMCosmicMuonForQC8",
                                        trackResX = cms.double(runConfig.trackResX),
                                        trackResY = cms.double(runConfig.trackResY),
                                        MulSigmaOnWindow = cms.double(runConfig.MulSigmaOnWindow),
+                                       SupChType = cms.vstring(SuperChType),
+                                       SuperChamberSeedingLayers = cms.vdouble(SuperChSeedingLayers),
                                        MuonSmootherParameters = cms.PSet(
                                            PropagatorAlong = cms.string('SteppingHelixPropagatorAny'),
                                            PropagatorOpposite = cms.string('SteppingHelixPropagatorAny'),
@@ -257,6 +273,8 @@ process.gemcrValidation = cms.EDAnalyzer('gemcrValidation',
     trackResX = cms.double(runConfig.trackResX),
     trackResY = cms.double(runConfig.trackResY),
     MulSigmaOnWindow = cms.double(runConfig.MulSigmaOnWindow),
+    SupChType = cms.vstring(SuperChType),
+    SuperChamberSeedingLayers = cms.vdouble(SuperChSeedingLayers),
     MuonSmootherParameters = cms.PSet(
                       PropagatorAlong = cms.string('SteppingHelixPropagatorAny'),
                       PropagatorOpposite = cms.string('SteppingHelixPropagatorAny'),
