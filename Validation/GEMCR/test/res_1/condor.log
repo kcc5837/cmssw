@@ -1,0 +1,240 @@
+000 (5796.000.000) 02/09 18:05:17 Job submitted from host: <134.61.13.51:9618?addrs=134.61.13.51-9618+[--1]-9618&noUDP&sock=8061_c105_4>
+...
+000 (5796.001.000) 02/09 18:05:17 Job submitted from host: <134.61.13.51:9618?addrs=134.61.13.51-9618+[--1]-9618&noUDP&sock=8061_c105_4>
+...
+000 (5796.002.000) 02/09 18:05:17 Job submitted from host: <134.61.13.51:9618?addrs=134.61.13.51-9618+[--1]-9618&noUDP&sock=8061_c105_4>
+...
+000 (5796.003.000) 02/09 18:05:17 Job submitted from host: <134.61.13.51:9618?addrs=134.61.13.51-9618+[--1]-9618&noUDP&sock=8061_c105_4>
+...
+000 (5796.004.000) 02/09 18:05:17 Job submitted from host: <134.61.13.51:9618?addrs=134.61.13.51-9618+[--1]-9618&noUDP&sock=8061_c105_4>
+...
+000 (5796.005.000) 02/09 18:05:17 Job submitted from host: <134.61.13.51:9618?addrs=134.61.13.51-9618+[--1]-9618&noUDP&sock=8061_c105_4>
+...
+000 (5796.006.000) 02/09 18:05:17 Job submitted from host: <134.61.13.51:9618?addrs=134.61.13.51-9618+[--1]-9618&noUDP&sock=8061_c105_4>
+...
+000 (5796.007.000) 02/09 18:05:17 Job submitted from host: <134.61.13.51:9618?addrs=134.61.13.51-9618+[--1]-9618&noUDP&sock=8061_c105_4>
+...
+000 (5796.008.000) 02/09 18:05:17 Job submitted from host: <134.61.13.51:9618?addrs=134.61.13.51-9618+[--1]-9618&noUDP&sock=8061_c105_4>
+...
+000 (5796.009.000) 02/09 18:05:17 Job submitted from host: <134.61.13.51:9618?addrs=134.61.13.51-9618+[--1]-9618&noUDP&sock=8061_c105_4>
+...
+001 (5796.000.000) 02/09 18:10:32 Job executing on host: <134.61.15.53:9618?addrs=134.61.15.53-9618+[--1]-9618&noUDP&sock=8129_b5dd_3>
+...
+001 (5796.001.000) 02/09 18:10:33 Job executing on host: <134.61.17.184:9618?addrs=134.61.17.184-9618+[--1]-9618&noUDP&sock=9216_2fbe_3>
+...
+001 (5796.009.000) 02/09 18:10:33 Job executing on host: <134.61.13.19:9618?addrs=134.61.13.19-9618+[--1]-9618&noUDP&sock=7925_c88b_3>
+...
+001 (5796.004.000) 02/09 18:10:33 Job executing on host: <134.61.17.163:9618?addrs=134.61.17.163-9618+[--1]-9618&noUDP&sock=9208_d08e_3>
+...
+001 (5796.003.000) 02/09 18:10:33 Job executing on host: <134.61.17.164:9618?addrs=134.61.17.164-9618+[--1]-9618&noUDP&sock=9379_1b40_3>
+...
+001 (5796.005.000) 02/09 18:10:33 Job executing on host: <134.61.17.185:9618?addrs=134.61.17.185-9618+[--1]-9618&noUDP&sock=9202_b2fc_3>
+...
+001 (5796.002.000) 02/09 18:10:33 Job executing on host: <134.61.17.177:9618?addrs=134.61.17.177-9618+[--1]-9618&noUDP&sock=9296_2ce3_3>
+...
+001 (5796.007.000) 02/09 18:10:33 Job executing on host: <134.61.17.177:9618?addrs=134.61.17.177-9618+[--1]-9618&noUDP&sock=9296_2ce3_3>
+...
+001 (5796.008.000) 02/09 18:10:33 Job executing on host: <134.61.15.69:9618?addrs=134.61.15.69-9618+[--1]-9618&noUDP&sock=8077_0af1_3>
+...
+001 (5796.006.000) 02/09 18:10:33 Job executing on host: <134.61.13.13:9618?addrs=134.61.13.13-9618+[--1]-9618&noUDP&sock=8052_e513_3>
+...
+006 (5796.009.000) 02/09 18:10:41 Image size of job updated: 24400
+	12  -  MemoryUsage of job (MB)
+	11384  -  ResidentSetSize of job (KB)
+...
+006 (5796.001.000) 02/09 18:10:41 Image size of job updated: 20604
+	8  -  MemoryUsage of job (MB)
+	8176  -  ResidentSetSize of job (KB)
+...
+006 (5796.004.000) 02/09 18:10:41 Image size of job updated: 22120
+	10  -  MemoryUsage of job (MB)
+	9512  -  ResidentSetSize of job (KB)
+...
+006 (5796.000.000) 02/09 18:10:42 Image size of job updated: 29620
+	16  -  MemoryUsage of job (MB)
+	15976  -  ResidentSetSize of job (KB)
+...
+006 (5796.003.000) 02/09 18:10:42 Image size of job updated: 26372
+	13  -  MemoryUsage of job (MB)
+	13232  -  ResidentSetSize of job (KB)
+...
+006 (5796.005.000) 02/09 18:10:42 Image size of job updated: 28096
+	15  -  MemoryUsage of job (MB)
+	14948  -  ResidentSetSize of job (KB)
+...
+006 (5796.002.000) 02/09 18:10:42 Image size of job updated: 8836
+	9  -  MemoryUsage of job (MB)
+	8836  -  ResidentSetSize of job (KB)
+...
+006 (5796.007.000) 02/09 18:10:42 Image size of job updated: 9072
+	9  -  MemoryUsage of job (MB)
+	8900  -  ResidentSetSize of job (KB)
+...
+006 (5796.008.000) 02/09 18:10:42 Image size of job updated: 20520
+	8  -  MemoryUsage of job (MB)
+	8160  -  ResidentSetSize of job (KB)
+...
+006 (5796.006.000) 02/09 18:10:42 Image size of job updated: 28240
+	15  -  MemoryUsage of job (MB)
+	15096  -  ResidentSetSize of job (KB)
+...
+006 (5796.006.000) 02/09 18:11:59 Image size of job updated: 258240
+	15  -  MemoryUsage of job (MB)
+	15096  -  ResidentSetSize of job (KB)
+...
+007 (5796.006.000) 02/09 18:11:59 Shadow exception!
+	Error from slot1_3@lx3a13.physik.rwth-aachen.de: STARTER at 134.61.13.13 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_1550356/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.13.13:11773>
+	4373  -  Run Bytes Sent By Job
+	9520604  -  Run Bytes Received By Job
+...
+012 (5796.006.000) 02/09 18:11:59 Job was held.
+	Error from slot1_3@lx3a13.physik.rwth-aachen.de: STARTER at 134.61.13.13 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_1550356/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.13.13:11773>
+	Code 13 Subcode 2
+...
+006 (5796.005.000) 02/09 18:12:00 Image size of job updated: 196656
+	15  -  MemoryUsage of job (MB)
+	14976  -  ResidentSetSize of job (KB)
+...
+007 (5796.005.000) 02/09 18:12:00 Shadow exception!
+	Error from slot1_7@lxblade27.physik.rwth-aachen.de: STARTER at 134.61.17.185 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_3569926/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.17.185:1514>
+	4376  -  Run Bytes Sent By Job
+	9520604  -  Run Bytes Received By Job
+...
+012 (5796.005.000) 02/09 18:12:00 Job was held.
+	Error from slot1_7@lxblade27.physik.rwth-aachen.de: STARTER at 134.61.17.185 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_3569926/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.17.185:1514>
+	Code 13 Subcode 2
+...
+006 (5796.008.000) 02/09 18:12:00 Image size of job updated: 255728
+	8  -  MemoryUsage of job (MB)
+	8160  -  ResidentSetSize of job (KB)
+...
+007 (5796.008.000) 02/09 18:12:00 Shadow exception!
+	Error from slot1_4@lx3b69.physik.rwth-aachen.de: STARTER at 134.61.15.69 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_2021871/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.15.69:1505>
+	4373  -  Run Bytes Sent By Job
+	9520604  -  Run Bytes Received By Job
+...
+012 (5796.008.000) 02/09 18:12:00 Job was held.
+	Error from slot1_4@lx3b69.physik.rwth-aachen.de: STARTER at 134.61.15.69 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_2021871/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.15.69:1505>
+	Code 13 Subcode 2
+...
+006 (5796.003.000) 02/09 18:12:00 Image size of job updated: 216560
+	13  -  MemoryUsage of job (MB)
+	13268  -  ResidentSetSize of job (KB)
+...
+007 (5796.003.000) 02/09 18:12:01 Shadow exception!
+	Error from slot1_6@lxblade06.physik.rwth-aachen.de: STARTER at 134.61.17.164 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_1117915/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.17.164:15307>
+	4376  -  Run Bytes Sent By Job
+	9520604  -  Run Bytes Received By Job
+...
+012 (5796.003.000) 02/09 18:12:01 Job was held.
+	Error from slot1_6@lxblade06.physik.rwth-aachen.de: STARTER at 134.61.17.164 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_1117915/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.17.164:15307>
+	Code 13 Subcode 2
+...
+006 (5796.000.000) 02/09 18:12:06 Image size of job updated: 29620
+	16  -  MemoryUsage of job (MB)
+	16072  -  ResidentSetSize of job (KB)
+...
+007 (5796.000.000) 02/09 18:12:06 Shadow exception!
+	Error from slot1_4@lx3b53.physik.rwth-aachen.de: STARTER at 134.61.15.53 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_3075117/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.15.53:5868>
+	4373  -  Run Bytes Sent By Job
+	9520604  -  Run Bytes Received By Job
+...
+006 (5796.009.000) 02/09 18:12:06 Image size of job updated: 190652
+	12  -  MemoryUsage of job (MB)
+	11432  -  ResidentSetSize of job (KB)
+...
+012 (5796.000.000) 02/09 18:12:06 Job was held.
+	Error from slot1_4@lx3b53.physik.rwth-aachen.de: STARTER at 134.61.15.53 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_3075117/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.15.53:5868>
+	Code 13 Subcode 2
+...
+007 (5796.009.000) 02/09 18:12:06 Shadow exception!
+	Error from slot1_1@lx3a19.physik.rwth-aachen.de: STARTER at 134.61.13.19 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_702423/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.13.19:4084>
+	4373  -  Run Bytes Sent By Job
+	9520604  -  Run Bytes Received By Job
+...
+012 (5796.009.000) 02/09 18:12:06 Job was held.
+	Error from slot1_1@lx3a19.physik.rwth-aachen.de: STARTER at 134.61.13.19 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_702423/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.13.19:4084>
+	Code 13 Subcode 2
+...
+006 (5796.001.000) 02/09 18:12:07 Image size of job updated: 228960
+	8  -  MemoryUsage of job (MB)
+	8180  -  ResidentSetSize of job (KB)
+...
+007 (5796.001.000) 02/09 18:12:07 Shadow exception!
+	Error from slot1_6@lxblade26.physik.rwth-aachen.de: STARTER at 134.61.17.184 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_1106817/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.17.184:19965>
+	4376  -  Run Bytes Sent By Job
+	9520604  -  Run Bytes Received By Job
+...
+012 (5796.001.000) 02/09 18:12:07 Job was held.
+	Error from slot1_6@lxblade26.physik.rwth-aachen.de: STARTER at 134.61.17.184 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_1106817/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.17.184:19965>
+	Code 13 Subcode 2
+...
+006 (5796.007.000) 02/09 18:13:25 Image size of job updated: 791836
+	9  -  MemoryUsage of job (MB)
+	8900  -  ResidentSetSize of job (KB)
+...
+006 (5796.002.000) 02/09 18:13:25 Image size of job updated: 791580
+	9  -  MemoryUsage of job (MB)
+	8836  -  ResidentSetSize of job (KB)
+...
+007 (5796.007.000) 02/09 18:13:25 Shadow exception!
+	Error from slot1_8@lxblade19.physik.rwth-aachen.de: STARTER at 134.61.17.177 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_720215/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.17.177:18506>
+	4376  -  Run Bytes Sent By Job
+	9520604  -  Run Bytes Received By Job
+...
+007 (5796.002.000) 02/09 18:13:25 Shadow exception!
+	Error from slot1_6@lxblade19.physik.rwth-aachen.de: STARTER at 134.61.17.177 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_720210/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.17.177:9930>
+	4376  -  Run Bytes Sent By Job
+	9520604  -  Run Bytes Received By Job
+...
+012 (5796.007.000) 02/09 18:13:25 Job was held.
+	Error from slot1_8@lxblade19.physik.rwth-aachen.de: STARTER at 134.61.17.177 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_720215/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.17.177:18506>
+	Code 13 Subcode 2
+...
+012 (5796.002.000) 02/09 18:13:25 Job was held.
+	Error from slot1_6@lxblade19.physik.rwth-aachen.de: STARTER at 134.61.17.177 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_720210/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.17.177:9930>
+	Code 13 Subcode 2
+...
+006 (5796.004.000) 02/09 18:13:31 Image size of job updated: 252080
+	10  -  MemoryUsage of job (MB)
+	9584  -  ResidentSetSize of job (KB)
+...
+007 (5796.004.000) 02/09 18:13:31 Shadow exception!
+	Error from slot1_3@lxblade05.physik.rwth-aachen.de: STARTER at 134.61.17.163 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_846831/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.17.163:30150>
+	4376  -  Run Bytes Sent By Job
+	9520604  -  Run Bytes Received By Job
+...
+012 (5796.004.000) 02/09 18:13:31 Job was held.
+	Error from slot1_3@lxblade05.physik.rwth-aachen.de: STARTER at 134.61.17.163 failed to send file(s) to <134.61.13.51:9618>: error reading from /user/condor/execute/dir_846831/gemcr/src/Validation/GEMCR/test/out_reco_MC.root: (errno 2) No such file or directory; SHADOW failed to receive file(s) from <134.61.17.163:30150>
+	Code 13 Subcode 2
+...
+009 (5796.000.000) 02/09 18:25:47 Job was aborted by the user.
+	via condor_rm (by user mocellin)
+...
+009 (5796.001.000) 02/09 18:25:47 Job was aborted by the user.
+	via condor_rm (by user mocellin)
+...
+009 (5796.002.000) 02/09 18:25:47 Job was aborted by the user.
+	via condor_rm (by user mocellin)
+...
+009 (5796.003.000) 02/09 18:25:47 Job was aborted by the user.
+	via condor_rm (by user mocellin)
+...
+009 (5796.004.000) 02/09 18:25:47 Job was aborted by the user.
+	via condor_rm (by user mocellin)
+...
+009 (5796.005.000) 02/09 18:25:48 Job was aborted by the user.
+	via condor_rm (by user mocellin)
+...
+009 (5796.006.000) 02/09 18:25:48 Job was aborted by the user.
+	via condor_rm (by user mocellin)
+...
+009 (5796.007.000) 02/09 18:25:48 Job was aborted by the user.
+	via condor_rm (by user mocellin)
+...
+009 (5796.008.000) 02/09 18:25:48 Job was aborted by the user.
+	via condor_rm (by user mocellin)
+...
+009 (5796.009.000) 02/09 18:25:48 Job was aborted by the user.
+	via condor_rm (by user mocellin)
+...

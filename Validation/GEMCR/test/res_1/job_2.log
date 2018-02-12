@@ -1,0 +1,66 @@
+lxblade19.physik.rwth-aachen.de
+Resetting caches
+Done: ProjectRename
+BEGIN Fri Feb 9 18:10:43 CET 2018 cmsRun job_002_cfg.py
+total 228
+drwx------ 3 mocellin inst3a  4096 Feb  9 18:10 .
+drwx------ 8 mocellin inst3a  4096 Feb  7 11:42 ..
+-rw------- 1 mocellin inst3a  6343 Feb  1 15:01 GEMHotVec.dat
+-rwx------ 1 mocellin inst3a  1415 Feb  9 17:09 GeometrySelection.py
+-rw------- 1 mocellin inst3a  1414 Feb  9 17:05 GeometrySelection.py~
+-rwx------ 1 mocellin inst3a 32535 Feb  1 15:01 MakePlot.py
+-rw------- 1 mocellin inst3a  5200 Feb  3 11:16 MakePlot_new.py
+-rw------- 1 mocellin inst3a  5207 Feb  3 11:16 MakePlot_new.py~
+-rwx------ 1 mocellin inst3a  6905 Feb  1 15:01 configureRun186_cfi.py
+-rwx------ 1 mocellin inst3a 19636 Feb  1 15:01 configureRun_cfi.py
+-rw------- 1 mocellin inst3a 12575 Feb  1 15:57 configureRun_cfi.pyc
+-rwx------ 1 mocellin inst3a  1055 Feb  1 15:01 full_archive.sh
+-rw------- 1 mocellin inst3a  3717 Feb  1 15:01 harvest_test_cfg.py
+-rw------- 1 mocellin inst3a   655 Feb  9 18:04 makejobs.py
+-rw------- 1 mocellin inst3a   655 Feb  9 18:04 makejobs.py~
+drwxr-xr-x 2 mocellin inst3a  4096 Feb  9 18:10 results
+-rw------- 1 mocellin inst3a  1051 Feb  9 18:05 run.sh
+-rw------- 1 mocellin inst3a  9660 Feb  1 15:01 runGEMCosmicStand_data.py
+-rw------- 1 mocellin inst3a 17615 Feb  9 17:55 runGEMCosmicStand_sim.py
+-rw------- 1 mocellin inst3a 17615 Feb  9 17:55 runGEMCosmicStand_sim.py~
+-rw------- 1 mocellin inst3a  4276 Feb  1 15:01 runHarvest.py
+-rwx------ 1 mocellin inst3a  1075 Feb  1 15:01 run_template.sh
+-rw------- 1 mocellin inst3a   542 Feb  9 18:05 submit.jds
+-rw------- 1 mocellin inst3a   574 Feb  1 15:01 submit_template.jds
+-rw------- 1 mocellin inst3a  6621 Feb  1 15:01 sum_eff.py
+-rw------- 1 mocellin inst3a  4388 Feb  1 15:01 val_test_cfg.py
+2018-02-09 18:10:47.594460
+ ##################################################################### 
+ # WARNING: the module CondCore.DBCommon.CondDBCommon is deprecated. # 
+ # Please import CondCore.CondDB.CondDB_cfi                          # 
+ ##################################################################### 
+This run dose not have mask lists
+Reco_Run000001_test.root  will be generted.
+total 228
+drwx------ 3 mocellin inst3a  4096 Feb  9 18:10 .
+drwx------ 8 mocellin inst3a  4096 Feb  7 11:42 ..
+-rw------- 1 mocellin inst3a  6343 Feb  1 15:01 GEMHotVec.dat
+-rwx------ 1 mocellin inst3a  1415 Feb  9 17:09 GeometrySelection.py
+-rw------- 1 mocellin inst3a  1414 Feb  9 17:05 GeometrySelection.py~
+-rwx------ 1 mocellin inst3a 32535 Feb  1 15:01 MakePlot.py
+-rw------- 1 mocellin inst3a  5200 Feb  3 11:16 MakePlot_new.py
+-rw------- 1 mocellin inst3a  5207 Feb  3 11:16 MakePlot_new.py~
+-rwx------ 1 mocellin inst3a  6905 Feb  1 15:01 configureRun186_cfi.py
+-rwx------ 1 mocellin inst3a 19636 Feb  1 15:01 configureRun_cfi.py
+-rw------- 1 mocellin inst3a 12575 Feb  1 15:57 configureRun_cfi.pyc
+-rwx------ 1 mocellin inst3a  1055 Feb  1 15:01 full_archive.sh
+-rw------- 1 mocellin inst3a  3717 Feb  1 15:01 harvest_test_cfg.py
+-rw------- 1 mocellin inst3a   655 Feb  9 18:04 makejobs.py
+-rw------- 1 mocellin inst3a   655 Feb  9 18:04 makejobs.py~
+drwxr-xr-x 2 mocellin inst3a  4096 Feb  9 18:10 results
+-rw------- 1 mocellin inst3a  1051 Feb  9 18:05 run.sh
+-rw------- 1 mocellin inst3a  9660 Feb  1 15:01 runGEMCosmicStand_data.py
+-rw------- 1 mocellin inst3a 17615 Feb  9 17:55 runGEMCosmicStand_sim.py
+-rw------- 1 mocellin inst3a 17615 Feb  9 17:55 runGEMCosmicStand_sim.py~
+-rw------- 1 mocellin inst3a  4276 Feb  1 15:01 runHarvest.py
+-rwx------ 1 mocellin inst3a  1075 Feb  1 15:01 run_template.sh
+-rw------- 1 mocellin inst3a   542 Feb  9 18:05 submit.jds
+-rw------- 1 mocellin inst3a   574 Feb  1 15:01 submit_template.jds
+-rw------- 1 mocellin inst3a  6621 Feb  1 15:01 sum_eff.py
+-rw------- 1 mocellin inst3a  4388 Feb  1 15:01 val_test_cfg.py
+TERMINATED_73 Fri Feb 9 18:13:24 CET 2018 cmsRun job_002_cfg.py

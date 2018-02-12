@@ -72,8 +72,8 @@ GEMCosmicMuonForQC8::GEMCosmicMuonForQC8(const edm::ParameterSet& ps) : iev(0) {
   trackResX = ps.getParameter<double>("trackResX");
   trackResY = ps.getParameter<double>("trackResY");
   MulSigmaOnWindow = ps.getParameter<double>("MulSigmaOnWindow");
-  g_SuperChamType = ps.getParameter<vector<string>>("SupChType");
-  g_vecChamType = ps.getParameter<vector<double>>("SuperChSeedingLayers");
+  g_SuperChamType = ps.getParameter<vector<string>>("SuperChamberType");
+  g_vecChamType = ps.getParameter<vector<double>>("SuperChamberSeedingLayers");
   theGEMRecHitToken = consumes<GEMRecHitCollection>(ps.getParameter<edm::InputTag>("gemRecHitLabel"));
   // register what this produces
   edm::ParameterSet serviceParameters = ps.getParameter<edm::ParameterSet>("ServiceParameters");

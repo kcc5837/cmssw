@@ -1,0 +1,11 @@
+----- Begin Fatal Exception 09-Feb-2018 18:11:59 CET-----------------------
+An exception of category 'Configuration' occurred while
+   [0] Constructing the EventProcessor
+   [1] Constructing module: class=GEMCosmicMuonForQC8 label='GEMCosmicMuonForQC8'
+Exception Message:
+MissingParameter: Parameter 'SuperChSeedingLayers' not found.
+----- End Fatal Exception -------------------------------------------------
+
+real	1m22.292s
+user	0m14.961s
+sys	0m2.481s

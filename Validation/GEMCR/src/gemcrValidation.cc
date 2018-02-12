@@ -63,8 +63,8 @@ gemcrValidation::gemcrValidation(const edm::ParameterSet& cfg): GEMBaseValidatio
   trackResY = cfg.getParameter<double>("trackResY"); 
   trackResX = cfg.getParameter<double>("trackResX");
   MulSigmaOnWindow = cfg.getParameter<double>("MulSigmaOnWindow");
-  SuperChamType = cfg.getParameter<vector<string>>("SupChType");
-  vecChamType = cfg.getParameter<vector<double>>("SuperChSeedingLayers");
+  SuperChamType = cfg.getParameter<vector<string>>("SuperChamberType");
+  vecChamType = cfg.getParameter<vector<double>>("SuperChamberSeedingLayers");
   edm::ParameterSet smootherPSet = cfg.getParameter<edm::ParameterSet>("MuonSmootherParameters");
   theSmoother = new CosmicMuonSmoother(smootherPSet, theService);
   theUpdator = new KFUpdator();
