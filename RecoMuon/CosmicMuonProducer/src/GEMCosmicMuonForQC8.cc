@@ -116,10 +116,10 @@ void GEMCosmicMuonForQC8::produce(edm::Event& ev, const edm::EventSetup& setup)
   const std::vector<const GEMSuperChamber*>& superChambers_ = mgeom->superChambers();   
   for (auto sch : superChambers_)
   {
-    int n_lay = sch->nChambers();
+	int n_lay = sch->nChambers();
     for (int l=0;l<n_lay;l++)
-    {
-      if (g_SuperChamType[l] == "S" || g_SuperChamType[l] == "L") gemChambers.push_back(*sch->chamber(l+1));
+   	{
+	  gemChambers.push_back(*sch->chamber(l+1));
     }
   }
 

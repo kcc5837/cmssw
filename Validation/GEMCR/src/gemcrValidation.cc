@@ -85,10 +85,10 @@ void gemcrValidation::bookHistograms(DQMStore::IBooker & ibooker, edm::Run const
   const std::vector<const GEMSuperChamber*>& superChambers_ = GEMGeometry_->superChambers();   
   for (auto sch : superChambers_)
   {
-    int n_lay = sch->nChambers();
+	int n_lay = sch->nChambers();
     for (int l=0;l<n_lay;l++)
-    {
-      if (SuperChamType[l] == "S" || SuperChamType[l] == "L") gemChambers.push_back(*sch->chamber(l+1));
+   	{
+   	  gemChambers.push_back(*sch->chamber(l+1));
     }
   }
   n_ch = gemChambers.size();
