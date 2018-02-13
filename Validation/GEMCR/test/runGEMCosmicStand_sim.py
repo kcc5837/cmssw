@@ -31,13 +31,13 @@ options.parseArguments()
 
 # Insert the type 0 , S , L of the superchambers in 15 positions: rear view
 SuperChType = ['L','L','L','L','L',\
-			   'L','L','L','0','0',\
-			   'L','L','L','0','0']
+			   'L','L','L','L','L',\
+			   'L','L','L','L','L']
 
 # Calculation of SuperChSeedingLayers from SuperChType
 SuperChSeedingLayers = [1,3, 0,0, 0,0, 0,0, 4,2,\
-						1,3, 0,0, 4,2, 0,0, 0,0,\
-						1,3, 0,0, 4,2, 0,0, 0,0]
+						1,3, 0,0, 0,0, 0,0, 4,2,\
+						1,3, 0,0, 0,0, 0,0, 4,2]
 
 from Configuration.StandardSequences.Eras import eras
 

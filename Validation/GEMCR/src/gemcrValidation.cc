@@ -96,6 +96,7 @@ void gemcrValidation::bookHistograms(DQMStore::IBooker & ibooker, edm::Run const
   ibooker.setCurrentFolder("MuonGEMRecHitsV/GEMRecHitsTask");
 
   gemcr_g = ibooker.book3D("gemcr_g","GEMCR GLOBAL RECHITS", 260,-130,130,165,-82.5,82.5, 140,0,140);
+  gemcrGen_g = ibooker.book3D("gemcrGen_g","GEMCR GLOBAL GEN HITS", 260,-130,130,30,-82.5,82.5, 140,0,140);
   gemcrTr_g = ibooker.book3D("gemcrTr_g","GEMCR GLOBAL RECHITS", 260,-130,130,165,-82.5,82.5, 140,0,140);
   gemcrCf_g = ibooker.book3D("gemcrCf_g","GEMCR GLOBAL RECHITS CONFIRMED", 260,-130,130,165,-82.5,82.5, 140,0,140);
   gemcrTrScint_g = ibooker.book3D("gemcrTrScint_g","GEMCR GLOBAL RECHITS", 260,-130,130,165,-82.5,82.5, 140,0,140);
