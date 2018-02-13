@@ -35,7 +35,7 @@ public:
   ~gemcrValidation();
   void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &) override;
   void analyze(const edm::Event& e, const edm::EventSetup&) override;
-  int findIndex(GEMDetId id_);
+  int findIndex(GEMDetId id_, bool bIsFindCopad);
   int findvfat(float x, float a, float b);
   const GEMGeometry* initGeometry(edm::EventSetup const & iSetup);
   double maxCLS, minCLS,maxRes, trackChi2, trackResY, trackResX, MulSigmaOnWindow;
@@ -83,6 +83,7 @@ private:
 
 
   MonitorElement* gemcr_g;
+  MonitorElement* gemcrGen_g;
   MonitorElement* gemcrTr_g;
   MonitorElement* gemcrCf_g;
   MonitorElement* gemcrTrScint_g;

@@ -287,7 +287,7 @@ int GEMCosmicMuonForQC8::findSeeds(std::vector<TrajectorySeed> *tmptrajectorySee
       if (hit1->globalPosition().y() < hit2->globalPosition().y()) {
         LocalPoint segPos = hit1->localPosition();
         GlobalVector segDirGV(hit2->globalPosition().x() - hit1->globalPosition().x(),
-                              hit2->globalPosition().y() - hit1->globalPosition().y(),
+                              (hit2->globalPosition().y() - hit1->globalPosition().y()),
                               hit2->globalPosition().z() - hit1->globalPosition().z());
 
         segDirGV *=10;
@@ -313,16 +313,24 @@ int GEMCosmicMuonForQC8::findSeeds(std::vector<TrajectorySeed> *tmptrajectorySee
         
         uint32_t unInfoSeeds = 0;
         
-        // HERE: if the chamber is top-1 or bottom+1 and roll==eta_partition of them is 1 or 8, we want the other to be the same -> reduce the # of tracks going outside the active volume and reconstructed as inside
-        
         GEMDetId detId1(hit1->rawId()), detId2(hit2->rawId());
         uint32_t unChNo1 = detId1.chamber(), unChNo2 = detId2.chamber();
-        uint32_t unRoll1 = detId1.roll(), unRoll2 = detId2.roll();        
+        
+        uint32_t unRoll1 = detId1.roll(), unRoll2 = detId2.roll();
+        uint32_t unDiffRoll = (uint32_t)abs(( (int32_t)unRoll1 ) - ( (int32_t)unRoll2 ));
+        
+        uint32_t unCol1 = ( unChNo1 - 1 ) / 10, unCol2 = ( unChNo2 - 1 ) / 10;
+        uint32_t unDiffCol = (uint32_t)abs(( (int32_t)unCol1 ) - ( (int32_t)unCol2 ));
+        
+        if ( unDiffCol != 0 ) continue;
+        
+        unInfoSeeds |= ( unDiffCol  ) << QC8FLAG_SEEDINFO_SHIFT_DIFFCOL;
+        unInfoSeeds |= ( unDiffRoll ) << QC8FLAG_SEEDINFO_SHIFT_DIFFROLL;
         
         uint32_t unIsForRef = ( g_vecChamType[ unChNo1 - 1 ] == 3 || g_vecChamType[ unChNo2 - 1 ] == 4 ? 1 : 0 );
         
         if ( unIsForRef == 1 && ( ( unRoll1 == 1 && unRoll2 == 1 ) || ( unRoll1 == 8 && unRoll2 == 8 ) ) ) {
-          unInfoSeeds |= QC8FLAG_SEEDINFO_REFVERTROLL18;
+          unInfoSeeds |= QC8FLAG_SEEDINFO_MASK_REFVERTROLL18;
         }
         
         tmptrajectorySeeds->push_back(seed);
