@@ -538,7 +538,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     gem_chamber_x_y[index]->Fill(rh_l_x, rh_roll);
     gem_chamber_cl_size[index]->Fill(clusterSize, nVfat);
     gem_chamber_bx[index]->Fill(bx,rh_roll);
-    gemcr_g->Fill(rh_g_X,rh_g_Z,rh_g_Y);
+    gemcr_g->Fill(-rh_g_X,rh_g_Z,rh_g_Y);
     gem_cls_tot->Fill(clusterSize);
     gem_bx_tot->Fill(bx);
     rh1_chamber->Fill(index);
@@ -750,7 +750,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
           gem_chamber_th2D_eff[index]->Fill(vfat, mRoll);                
           gem_chamber_thxroll_eff[index]->Fill(tlp.x(), mRoll);
           gem_chamber_thxy_eff[index]->Fill(tlp.x(), gtrp.z());
-          gemcrTr_g->Fill(gtrp.x(), gtrp.z(), gtrp.y());
+          gemcrTr_g->Fill(-gtrp.x(), gtrp.z(), gtrp.y());
           g_nNumTrajHit++;
           if ( nNumCurrFiredCh == 6 ) g_nNumTrajHit6++;
           
@@ -764,7 +764,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
             gem_chamber_th2D_eff_scint[index]->Fill(vfat, mRoll);                
             gem_chamber_thxroll_eff_scint[index]->Fill(tlp.x(), mRoll);
             gem_chamber_thxy_eff_scint[index]->Fill(tlp.x(), gtrp.z());
-            gemcrTrScint_g->Fill(gtrp.x(), gtrp.z(), gtrp.y());
+            gemcrTrScint_g->Fill(-gtrp.x(), gtrp.z(), gtrp.y());
           }
           
           double maxR = 99.9;
@@ -792,7 +792,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
             Local3DPoint hitLP = tmpRecHit->localPosition();
             Global3DPoint recHitGP = tmpRecHit->globalPosition();
             
-            gemcrCf_g->Fill(recHitGP.x(), recHitGP.z(), recHitGP.y());
+            gemcrCf_g->Fill(-recHitGP.x(), recHitGP.z(), recHitGP.y());
           
             nTrajRecHit++;
             
@@ -805,7 +805,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
             
             if ( bIsScint )
             {
-              gemcrCfScint_g->Fill(recHitGP.x(), recHitGP.z(), recHitGP.y());
+              gemcrCfScint_g->Fill(-recHitGP.x(), recHitGP.z(), recHitGP.y());
               gem_chamber_tr2D_eff_scint[index]->Fill(vfat, mRoll);
               gem_chamber_trxroll_eff_scint[index]->Fill(tlp.x(), mRoll);
               gem_chamber_trxy_eff_scint[index]->Fill(tlp.x(), gtrp.z());

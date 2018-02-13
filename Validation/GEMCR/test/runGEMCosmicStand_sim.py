@@ -29,7 +29,7 @@ options.register('idxJob',
 
 options.parseArguments()
 
-# Insert the type 0 , S , L of the superchambers in 15 positions: frontal view
+# Insert the type 0 , S , L of the superchambers in 15 positions: rear view
 SuperChType = ['L','L','L','L','L',\
 			   'L','L','L','0','0',\
 			   'L','L','L','0','0']
