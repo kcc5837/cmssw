@@ -22,6 +22,11 @@
 
 #include "SimDataFormats/Track/interface/SimTrack.h"
 
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include <TFile.h>
+#include <TTree.h>
+
 typedef struct tagGPSeed {
   GlobalPoint P1;
   GlobalPoint P2;
@@ -40,6 +45,7 @@ public:
   const GEMGeometry* initGeometry(edm::EventSetup const & iSetup);
   double maxCLS, minCLS,maxRes, trackChi2, trackResY, trackResX, MulSigmaOnWindow;
   bool makeTrack, isMC;
+
 private:
   const GEMGeometry* GEMGeometry_;
   std::vector<MonitorElement*> gem_chamber_x_y;
@@ -126,6 +132,18 @@ private:
   float CalcWindowWidthX(GPSeed *pVecSeed, GlobalPoint *pPCurr);
   float CalcWindowWidthY(GPSeed *pVecSeed, GlobalPoint *pPCurr);
   //int CalcDiffGenRec(GPSeed *pVecSeed, GlobalPoint *pPCurr);
+
+
+  TTree *tree;
+  int run;
+  int lumi;
+  int nev;
+  const static int maxNlayer = 30;
+  const static int maxNphi = 3;
+  const static int maxNeta = 8;
+  int vfatI[maxNlayer][maxNphi][maxNeta];
+  int vfatF[maxNlayer][maxNphi][maxNeta];
+
 };
 
 #endif

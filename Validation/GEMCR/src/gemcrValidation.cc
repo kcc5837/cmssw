@@ -39,6 +39,8 @@
 
 #include <TCanvas.h>
 using namespace std;
+using namespace edm;
+
 gemcrValidation::gemcrValidation(const edm::ParameterSet& cfg): GEMBaseValidation(cfg)
 {
   time_t rawTime;
@@ -69,6 +71,14 @@ gemcrValidation::gemcrValidation(const edm::ParameterSet& cfg): GEMBaseValidatio
   theUpdator = new KFUpdator();
   time(&rawTime);
   printf("End of gemcrValidation::gemcrValidation() at %s\n", asctime(localtime(&rawTime)));
+
+  edm::Service<TFileService> fs;
+  tree = fs->make<TTree>("tree", "Tree for QC8");
+  tree->Branch("run",&run,"run/I");
+  tree->Branch("lumi",&lumi,"lumi/I");
+  tree->Branch("ev",&nev,"ev/I");
+  tree->Branch("vfatI",vfatI,"vfatI[30][3][8]/I");
+  tree->Branch("vfatF",vfatF,"vfatF[30][3][8]/I");
 }
 
 MonitorElement* g_resXRTSim;
@@ -251,7 +261,7 @@ int g_nNumMatched = 0;
 double g_dMinY = 100000.0, g_dMaxY = -10000000.0;
 
 gemcrValidation::~gemcrValidation() {
-  printf("res1 : %i\n", g_nEvt);
+  printf("\nres1 : %i\n", g_nEvt);
   printf("res2 : %i\n", g_nNumRecHit);
   printf("res3 : %i\n", g_nNumFiredCh);
   printf("res4 : %i\n", g_nNumFiredChValid);
@@ -310,6 +320,23 @@ int g_nNumTest = 0;
 
 void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
   g_nEvt++;
+
+  run = e.id().run();
+  lumi = e.id().luminosityBlock();
+  nev = e.id().event();
+  if(nev%1000==0) cout<<"nev "<<nev<<endl;
+
+  for(int i=0;i<maxNlayer;i++)
+  {
+    for(int j=0;j<maxNphi;j++)
+    {
+      for(int k=0;k<maxNeta;k++)
+      {
+        vfatI[i][j][k] = 0;
+        vfatF[i][j][k] = 0;
+      }
+    }
+  }
 
   theService->update(iSetup);
 
@@ -721,6 +748,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
           if(minDely > abs(rtlp.y())){minDely = abs(rtlp.y()); mRoll = r+1;}
         }
 
+
         if(1 == 0 && ( mRoll == 1 || mRoll == 8 )){
           bool tester = 1;
           for (int chId = fCha; chId < lCha+1; chId++){
@@ -752,6 +780,12 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
           gem_chamber_track[findIndex(ch.id())]->Fill(4.5);
           int index = findIndex(ch.id());
           double vfat = findvfat(tlp.x(), min_x, max_x);
+
+          int idx = index;
+          int ivfat = (int)vfat - 1;
+          int imRoll = mRoll - 1;
+          vfatI[idx][ivfat][imRoll]=1;
+
           gem_chamber_th2D_eff[index]->Fill(vfat, mRoll);                
           gem_chamber_thxroll_eff[index]->Fill(tlp.x(), mRoll);
           gem_chamber_thxy_eff[index]->Fill(tlp.x(), gtrp.z());
@@ -801,6 +835,8 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
           
             nTrajRecHit++;
             
+            vfatF[idx][ivfat][imRoll]=1;
+
             gem_chamber_tr2D_eff[index]->Fill(vfat, mRoll);
             gem_chamber_trxroll_eff[index]->Fill(tlp.x(), mRoll);
             gem_chamber_trxy_eff[index]->Fill(tlp.x(), gtrp.z());
@@ -891,6 +927,12 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   }
   
   g_nNumTest++;
+
+  tree->Fill();
 }
 
-
+//void gemcrValidation::endJob() {
+//  cout<<"End"<<endl;
+//  outRoot = new TFile(outFile,"RECREATE");
+//  tree->Write();
+//}

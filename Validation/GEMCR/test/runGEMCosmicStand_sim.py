@@ -11,18 +11,15 @@ import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing('analysis')
 
-options.register('runNum',
-                 1,
+options.register("runNum",1,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "Run number")
-options.register('eventsPerJob',
-                 10000,
+options.register("eventsPerJob",10000,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "The number of events (in each file)")
-options.register('idxJob',
-                 "-1",
+options.register("idxJob","-1",
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "The index of this root file")
@@ -128,7 +125,8 @@ process.source = cms.Source("EmptySource",
 )
 process.options = cms.untracked.PSet()
 
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+#process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.cerr.threshold = 'ERROR'
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
@@ -148,7 +146,18 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
     ),
     eventAutoFlushCompressedSize = cms.untracked.int32(10485760),
     fileName = cms.untracked.string('file:'+strOutput),
-    outputCommands = cms.untracked.vstring( ('keep *')),
+    #outputCommands = cms.untracked.vstring( ('keep *')),
+    outputCommands = cms.untracked.vstring( (
+     'drop *'
+    # 'keep *_*_MuonGEMHits_RECO',
+    # 'keep *_*_unsmeared_RECO',
+    # 'keep *_gemRecHits_*_RECO',
+    # 'keep *_GEMCosmicMuonForQC8_*_RECO',
+    # 'keep *_genParticles_*_RECO',
+    # 'keep *_*GEMDigis_*_RECO'
+
+    )),
+
     splitLevel = cms.untracked.int32(0)
 )
 
@@ -233,17 +242,28 @@ fScale = 1.0
 
 process.gemcrValidation = cms.EDAnalyzer('gemcrValidation',
     process.MuonServiceProxy,
+    #jobId = str(nIdxJob),
+    #outFile = cms.string("tree_"+str(nIdxJob)+".root"),
+    #outFile = cms.string("tree_0"+cms.string(nIdxJob)+".root"),
+    #outFileName = cms.string("tree_0.root"),
+    #outFile = cms.untracked.string('tree_0.root'),
     verboseSimHit = cms.untracked.int32(1),
     simInputLabel = cms.InputTag('g4SimHits',"MuonGEMHits"),
+    # PSimHits_g4SimHits_MuonGEMHits_RECO
     genVtx = cms.InputTag("generator","unsmeared", "RECO"),
+    # edmHepMCProduct_generator_unsmeared_RECO
     recHitsInputLabel = cms.InputTag('gemRecHits'),
+    # GEMDetIdGEMRecHitsOwnedRangeMap_gemRecHits__RECO
     tracksInputLabel = cms.InputTag('GEMCosmicMuonForQC8','','RECO'),
     seedInputLabel = cms.InputTag('GEMCosmicMuonForQC8','','RECO'),
     trajInputLabel = cms.InputTag('GEMCosmicMuonForQC8','','RECO'),
     chNoInputLabel = cms.InputTag('GEMCosmicMuonForQC8','','RECO'),
     seedTypeInputLabel = cms.InputTag('GEMCosmicMuonForQC8','','RECO'),
+    # *_GEMCosmicMuonForQC8_*_RECO
     genParticleLabel = cms.InputTag('genParticles','','RECO'),
+    # *_genParticles_*_RECO
     gemDigiLabel = cms.InputTag("muonGEMDigis","","RECO"),
+    # *_*GEMDigis_*_RECO
     # st1, st2_short, st2_long of xbin, st1,st2_short,st2_long of ybin
     nBinGlobalZR = cms.untracked.vdouble(200,200,200,150,180,250),
     # st1 xmin, xmax, st2_short xmin, xmax, st2_long xmin, xmax, st1 ymin, ymax...
@@ -262,6 +282,11 @@ process.gemcrValidation = cms.EDAnalyzer('gemcrValidation',
                       PropagatorOpposite = cms.string('SteppingHelixPropagatorAny'),
                       RescalingFactor = cms.double(5.0)
                       )
+
+)
+
+process.TFileService = cms.Service("TFileService",
+    fileName = cms.string('temp_'+strOutput)
 )
 
 # Path and EndPath definitions
@@ -299,7 +324,9 @@ process.schedule = cms.Schedule(process.generation_step,process.genfiltersummary
 #	getattr(process,path)._seq = process.generator * getattr(process,path)._seq 
 
 process.RandomNumberGeneratorService.generator = cms.PSet(
-    initialSeed = cms.untracked.uint32(12345 * ( nIdxJob + 1 )),
+    #initialSeed = cms.untracked.uint32(12345 * ( nIdxJob + 1 )),
+    initialSeed = cms.untracked.uint32( ( nIdxJob + 1 ) + options.runNum*10000),
+    #initialSeed = cms.untracked.uint32(123 * ( nIdxJob + 1 + options.runNum*10000)),
     engineName = cms.untracked.string('HepJamesRandom')
 )
 process.RandomNumberGeneratorService.simMuonGEMDigis = process.RandomNumberGeneratorService.generator
