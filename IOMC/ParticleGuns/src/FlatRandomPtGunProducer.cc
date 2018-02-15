@@ -77,31 +77,16 @@ void FlatRandomPtGunProducer::produce(Event &e, const EventSetup& es)
    {
       cout << " FlatRandomPtGunProducer : Begin New Event Generation" << endl ; 
    }
-   // event loop (well, another step in it...)
-          
-   // no need to clean up GenEvent memory - done in HepMCProduct
-   // 
-   
-   // here re-create fEvt (memory)
-   //
+
    fEvt = new HepMC::GenEvent() ;
-   
-   // now actualy, cook up the event from PDGTable and gun parameters
-   //
-   // 1st, primary vertex
-   //
-   //HepMC::GenVertex* Vtx = new HepMC::GenVertex(HepMC::FourVector(0.,0.,0.));
-   /*double dVx = CLHEP::RandFlat::shoot(engine, -1200.0, 1200.0) ;
-   double dVy = -100.0;
-   double dVz = CLHEP::RandFlat::shoot(engine, -650.0, 750.0) ;
-   HepMC::GenVertex* Vtx = new HepMC::GenVertex(HepMC::FourVector(dVx,dVy,dVz));*/
+  
    double dVx;
    double dVy = 1540.15; // same Y as the upper scintillator
    double dVz;
    HepMC::GenVertex* Vtx = NULL;
 
    // loop over particles
-   //
+
    int barcode = 1 ;
    for (unsigned int ip=0; ip<fPartIDs.size(); ++ip)
    {
@@ -138,7 +123,6 @@ void FlatRandomPtGunProducer::produce(Event &e, const EventSetup& es)
          pz     =  mom*sin(theta)*sin(phi) ;
          py     = -mom*cos(theta) ; // with the - sign, the muons are going downwards: falling from the sky
 
-         
          if ( myIsMuonPassScint(dVx, dVy, dVz, px, py, pz) == true ) break; // muon passing through both the scintillators => valid: the loop can be stopped
          
          j++;
@@ -147,7 +131,7 @@ void FlatRandomPtGunProducer::produce(Event &e, const EventSetup& es)
        
        int PartID = fPartIDs[ip] ;
        const HepPDT::ParticleData* 
-          PData = fPDGTable->particle(HepPDT::ParticleID(abs(PartID))) ;
+       PData = fPDGTable->particle(HepPDT::ParticleID(abs(PartID))) ;
        double mass   = PData->mass().value() ;
        Vtx = new HepMC::GenVertex(HepMC::FourVector(dVx,dVy,dVz));
 
@@ -162,17 +146,16 @@ void FlatRandomPtGunProducer::produce(Event &e, const EventSetup& es)
        if ( fAddAntiParticle )
        {
           HepMC::FourVector ap(-px,-py,-pz,energy) ;
-	  int APartID = -PartID ;
-	  if ( PartID == 22 || PartID == 23 )
-	  {
-	     APartID = PartID ;
-	  }	  
-	  HepMC::GenParticle* APart = new HepMC::GenParticle(ap,APartID,1);
-	  APart->suggest_barcode( barcode ) ;
-	  barcode++ ;
-	  Vtx->add_particle_out(APart) ;
+		  int APartID = -PartID ;
+		  if ( PartID == 22 || PartID == 23 )
+		  {
+	      	APartID = PartID ;
+	      }	  
+	 	  HepMC::GenParticle* APart = new HepMC::GenParticle(ap,APartID,1);
+	  	  APart->suggest_barcode( barcode ) ;
+	  	  barcode++ ;
+	  	  Vtx->add_particle_out(APart) ;
        }
-
    }
 
    fEvt->add_vertex(Vtx) ;
@@ -194,9 +177,6 @@ void FlatRandomPtGunProducer::produce(Event &e, const EventSetup& es)
    if ( fVerbosity > 0 )
    {
       // for testing purpose only
-      // fEvt->print() ; // prints empty info after it's made into edm::Event
       cout << " FlatRandomPtGunProducer : Event Generation Done " << endl;
    }
 }
-//#include "FWCore/Framework/interface/MakerMacros.h"
-//DEFINE_FWK_MODULE(FlatRandomPtGunProducer);

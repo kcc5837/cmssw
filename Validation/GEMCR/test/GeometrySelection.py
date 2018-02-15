@@ -13,7 +13,7 @@ log = logging.getLogger( 'remote' )
 import yaml
 
 # Possible geometries: A , B , C , P5
-GeomSelected = "P5"
+GeomSelected = "A"
 
 def getSamplesFromLocalDisk():
     filestring = "ls /home/home1/institut_3a/mocellin/tests/src/Geometry/MuonCommonData/data/cosmic1/GeomFiles/geom" + GeomSelected + "/gem11*"
