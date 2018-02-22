@@ -77,8 +77,30 @@ gemcrValidation::gemcrValidation(const edm::ParameterSet& cfg): GEMBaseValidatio
   tree->Branch("run",&run,"run/I");
   tree->Branch("lumi",&lumi,"lumi/I");
   tree->Branch("ev",&nev,"ev/I");
+
+  tree->Branch("genMuPt",&genMuPt,"genMuPt/F");
+  tree->Branch("genMuTheta",&genMuTheta,"genMuTheta/F");
+  tree->Branch("genMuPhi",&genMuPhi,"genMuPhi/F");
+  tree->Branch("genMuX",&genMuX,"genMuX/F");
+  tree->Branch("genMuY",&genMuY,"genMuY/F");
+  tree->Branch("genMuZ",&genMuZ,"genMuZ/F");
+
   tree->Branch("vfatI",vfatI,"vfatI[30][3][8]/I");
   tree->Branch("vfatF",vfatF,"vfatF[30][3][8]/I");
+
+  tree->Branch("nglobalRecHit",&nglobalRecHit,"nglobalRecHit/I"); //number of total recHit per event
+  tree->Branch("globalRecHitTheta",globalRecHitTheta,"globalRecHitTheta[nglobalRecHit]/F");
+  tree->Branch("globalRecHitPhi",globalRecHitPhi,"globalRecHitPhi[nglobalRecHit]/F");
+  tree->Branch("globalRecHitX",globalRecHitX,"globalRecHitX[nglobalRecHit]/F");
+  tree->Branch("globalRecHitY",globalRecHitY,"globalRecHitY[nglobalRecHit]/F");
+  tree->Branch("globalRecHitZ",globalRecHitZ,"globalRecHitZ[nglobalRecHit]/F");
+
+  tree->Branch("nTotTrajRecHit",&nTotTrajRecHit,"nTotTrajRecHit/I"); //number of total recHit associated track per event
+  tree->Branch("trajRecHitTheta",trajRecHitTheta,"trajRecHitTheta[nTotTrajRecHit]/F");
+  tree->Branch("trajRecHitPhi",trajRecHitPhi,"trajRecHitPhi[nTotTrajRecHit]/F");
+  tree->Branch("trajRecHitX",trajRecHitX,"trajRecHitX[nTotTrajRecHit]/F");
+  tree->Branch("trajRecHitY",trajRecHitY,"trajRecHitY[nTotTrajRecHit]/F");
+  tree->Branch("trajRecHitZ",trajRecHitZ,"trajRecHitZ[nTotTrajRecHit]/F");
 }
 
 MonitorElement* g_resXRTSim;
@@ -337,6 +359,21 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
       }
     }
   }
+  genMuPt = -10;
+  genMuTheta = -10;
+  genMuPhi = -10;
+  genMuX = 0;
+  genMuY = 0;
+  genMuZ = 0;
+
+  nglobalRecHit = 0;
+  nTotTrajRecHit = 0;
+//  for(int i=0;i<maxNRecHit;i++)
+//  {
+//    globalRecHitTheta[i] = -10;
+//    globalRecHitPhi[i] = -10;
+//    globalRecHitZ[i] = -10;
+//  }
 
   theService->update(iSetup);
 
@@ -434,6 +471,24 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     e.getByToken( this->InputTagToken_US, genVtx);
     genMuon = genVtx->GetEvent()->barcode_to_particle(1);
     
+    //double gen_px = genMuon->momentum().x();
+    //double gen_py = genMuon->momentum().y();
+    double gen_pt = genMuon->momentum().perp();
+    double gen_theta = genMuon->momentum().theta();
+    double gen_phi = genMuon->momentum().phi();
+    //cout<<"nev "<<nev<<", genMuon : px "<<gen_px<<", py "<<gen_py<<", pt "<<gen_pt<<", theta "<<gen_theta<<", phi "<<gen_phi<<endl;
+    genMuPt = gen_pt;
+    genMuTheta = gen_theta;
+    genMuPhi = gen_phi;    
+
+    double vertexX = genMuon->production_vertex()->position().x();
+    double vertexY = genMuon->production_vertex()->position().y();
+    double vertexZ = genMuon->production_vertex()->position().z();
+    genMuX = vertexX;
+    genMuY = vertexY;
+    genMuZ = vertexZ;
+    //cout<<"nev "<<nev<<", vertexX "<<vertexX<<", vertexY "<<vertexY<<", vertexZ "<<vertexZ<<endl;
+
     double dUnitGen = 0.1;
     
     fXGenGP1x = dUnitGen * genMuon->production_vertex()->position().x();
@@ -443,7 +498,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     fXGenGP2x = fXGenGP1x + dUnitGen * genMuon->momentum().x();
     fXGenGP2y = fXGenGP1y + dUnitGen * genMuon->momentum().y();
     fXGenGP2z = fXGenGP1z + dUnitGen * genMuon->momentum().z();
-    
+
     Float_t fVecX, fVecZ;
     int arrnFired[ 32 ] = {0, };
     
@@ -535,6 +590,9 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     rMul.push_back(0);
   }
   TString strListRecHit("");
+
+  nglobalRecHit = gemRecHits->size();
+  int nhit = 0;
   for (GEMRecHitCollection::const_iterator recHit = gemRecHits->begin(); recHit != gemRecHits->end(); ++recHit){
 
     Float_t  rh_l_x = recHit->localPosition().x();
@@ -557,6 +615,15 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     Float_t     rh_g_X = recHitGP.x();
     Float_t     rh_g_Y = recHitGP.y();
     Float_t     rh_g_Z = recHitGP.z();
+
+    globalRecHitTheta[nhit] = recHitGP.theta();
+    globalRecHitPhi[nhit] = recHitGP.phi();
+    globalRecHitX[nhit] = recHitGP.x();
+    globalRecHitY[nhit] = recHitGP.y();
+    globalRecHitZ[nhit] = recHitGP.z();
+    //cout<<"nev "<<nev<<", eta "<<recHitGP.eta()<<", theta "<<globalRecHitTheta[nhit]<<", phi "<<globalRecHitPhi[nhit]<<", z "<<globalRecHitZ[nhit]<<endl;
+    nhit++;
+
     int nVfat = 8*(findvfat(firstClusterStrip+clusterSize*0.5, 0, 128*3)-1) + (8-rh_roll);
     vMul[index][nVfat] += 1;
     gem_chamber_x_y[index]->Fill(rh_l_x, rh_roll);
@@ -653,6 +720,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   if ( fChMul == 4 ) events_withtraj->Fill(0.5);
   if ( fChMul == 5 ) events_withtraj->Fill(1.5);
   if ( fChMul >= 6 ) events_withtraj->Fill(2.5);
+
   for (auto tch : gemChambers)
   {
     countTC += 1;
@@ -832,9 +900,16 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
             Global3DPoint recHitGP = tmpRecHit->globalPosition();
             
             gemcrCf_g->Fill(recHitGP.x(), recHitGP.z(), recHitGP.y());
-          
+
             nTrajRecHit++;
             
+            trajRecHitTheta[nTotTrajRecHit] = recHitGP.theta();
+            trajRecHitPhi[nTotTrajRecHit] = recHitGP.phi();
+            trajRecHitX[nTotTrajRecHit] = recHitGP.x();
+            trajRecHitY[nTotTrajRecHit] = recHitGP.y();
+            trajRecHitZ[nTotTrajRecHit] = recHitGP.z();
+            nTotTrajRecHit++;
+          
             vfatF[idx][ivfat][imRoll]=1;
 
             gem_chamber_tr2D_eff[index]->Fill(vfat, mRoll);
@@ -895,7 +970,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
         continue;
       }
     }
-    
+
     if ( 11 <= countTC && countTC <= 20 )
     {
       Float_t fSeedDiffY = fSeedP2y - fSeedP1y;

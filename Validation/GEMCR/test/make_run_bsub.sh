@@ -2,13 +2,15 @@
 
 NeventsPerJob=10000
 NJob=100
+StartJob=0
+#StartJob=0
 #NeventsPerJob=$1
 #NJob=$2
 
 #for RUN in 1 2 3 4 5
-for RUN in 1
+for RUN in 2
 do
-  JobId=0
+  JobId=$StartJob
   while [ $JobId -lt $NJob ]
   do
     echo run$RUN jobid$JobId
@@ -17,9 +19,10 @@ do
     #For batch job
     #bsub -q 1nd -J ${RUN}_${JobId} < run_bsub.sh ${RUN} ${NeventsPerJob} ${JobId}
     #bsub -q 1nd -J ${RUN}_${JobId} < run_bsub_${RUN}_${JobId}.sh ${RUN} ${NeventsPerJob} ${JobId}
+    bsub -q 1nd run_bsub.sh ${RUN} ${NeventsPerJob} ${JobId}
 
     #For local job
-    ./run_bsub.sh ${RUN} ${NeventsPerJob} ${JobId}
+    #./run_bsub.sh ${RUN} ${NeventsPerJob} ${JobId}
 
     sleep 1
     rm run_bsub_${RUN}_${JobId}.sh

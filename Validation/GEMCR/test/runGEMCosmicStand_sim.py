@@ -146,17 +146,16 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
     ),
     eventAutoFlushCompressedSize = cms.untracked.int32(10485760),
     fileName = cms.untracked.string('file:'+strOutput),
-    #outputCommands = cms.untracked.vstring( ('keep *')),
-    outputCommands = cms.untracked.vstring( (
-     'drop *'
+    outputCommands = cms.untracked.vstring( ('keep *')),
+    #outputCommands = cms.untracked.vstring( (
+    # 'drop *'
     # 'keep *_*_MuonGEMHits_RECO',
     # 'keep *_*_unsmeared_RECO',
     # 'keep *_gemRecHits_*_RECO',
     # 'keep *_GEMCosmicMuonForQC8_*_RECO',
     # 'keep *_genParticles_*_RECO',
     # 'keep *_*GEMDigis_*_RECO'
-
-    )),
+    #)),
 
     splitLevel = cms.untracked.int32(0)
 )
@@ -175,6 +174,10 @@ process.generator = cms.EDProducer("FlatRandomPtGunProducer",
         MaxPhi = cms.double(-3.141592),
         MinTheta = cms.double(0.0),
         MaxTheta = cms.double(1.5707963),
+        #MinPhi = cms.double(-2.5),
+        #MaxPhi = cms.double(-1.0),
+        #MinTheta = cms.double(0.7),
+        #MaxTheta = cms.double(2.4),
         IsThetaFlat = cms.bool(False), # If 'True': theta distribution is flat. If 'False': theta distribution is a cos^2
         PartID = cms.vint32(-13)
     ),
@@ -242,11 +245,6 @@ fScale = 1.0
 
 process.gemcrValidation = cms.EDAnalyzer('gemcrValidation',
     process.MuonServiceProxy,
-    #jobId = str(nIdxJob),
-    #outFile = cms.string("tree_"+str(nIdxJob)+".root"),
-    #outFile = cms.string("tree_0"+cms.string(nIdxJob)+".root"),
-    #outFileName = cms.string("tree_0.root"),
-    #outFile = cms.untracked.string('tree_0.root'),
     verboseSimHit = cms.untracked.int32(1),
     simInputLabel = cms.InputTag('g4SimHits',"MuonGEMHits"),
     # PSimHits_g4SimHits_MuonGEMHits_RECO
@@ -326,7 +324,6 @@ process.schedule = cms.Schedule(process.generation_step,process.genfiltersummary
 process.RandomNumberGeneratorService.generator = cms.PSet(
     #initialSeed = cms.untracked.uint32(12345 * ( nIdxJob + 1 )),
     initialSeed = cms.untracked.uint32( ( nIdxJob + 1 ) + options.runNum*10000),
-    #initialSeed = cms.untracked.uint32(123 * ( nIdxJob + 1 + options.runNum*10000)),
     engineName = cms.untracked.string('HepJamesRandom')
 )
 process.RandomNumberGeneratorService.simMuonGEMDigis = process.RandomNumberGeneratorService.generator

@@ -138,11 +138,32 @@ private:
   int run;
   int lumi;
   int nev;
+  float genMuPt;
+  float genMuTheta;
+  float genMuPhi;
+  float genMuX;
+  float genMuY;
+  float genMuZ;
   const static int maxNlayer = 30;
   const static int maxNphi = 3;
   const static int maxNeta = 8;
   int vfatI[maxNlayer][maxNphi][maxNeta];
   int vfatF[maxNlayer][maxNphi][maxNeta];
+
+  const static int maxNRecHit = 100;
+  int nglobalRecHit;
+  float globalRecHitTheta[maxNRecHit];
+  float globalRecHitPhi[maxNRecHit];
+  float globalRecHitX[maxNRecHit];
+  float globalRecHitY[maxNRecHit];
+  float globalRecHitZ[maxNRecHit];
+
+  int nTotTrajRecHit;
+  float trajRecHitTheta[maxNRecHit];
+  float trajRecHitPhi[maxNRecHit];
+  float trajRecHitX[maxNRecHit];
+  float trajRecHitY[maxNRecHit];
+  float trajRecHitZ[maxNRecHit];
 
 };
 
