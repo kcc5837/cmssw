@@ -141,7 +141,8 @@ void GEMCosmicMuonForQC8::produce(edm::Event& ev, const edm::EventSetup& setup)
   
   int countTC = 0;
     
-  for (auto tch : gemChambers){
+  for (auto tch : gemChambers)
+  {
     countTC++;
     MuonTransientTrackingRecHit::MuonRecHitContainer muRecHits;
     MuonTransientTrackingRecHit::MuonRecHitContainer seedupRecHits;
@@ -351,8 +352,8 @@ Trajectory GEMCosmicMuonForQC8::makeTrajectory(TrajectorySeed seed, MuonTransien
   TrajectoryStateOnSurface tsos = trajectoryStateTransform::transientState(ptsd1,&bp,&*theService->magneticField());
   TrajectoryStateOnSurface tsosCurrent = tsos;
   TransientTrackingRecHit::ConstRecHitContainer consRecHits;
-  for (auto ch : gemChambers){
-    //if (ch == testChamber) continue;
+  for (auto ch : gemChambers)
+  {
     std::shared_ptr<MuonTransientTrackingRecHit> tmpRecHit;
     tsosCurrent = theService->propagator("SteppingHelixPropagatorAny")->propagate(tsosCurrent, theService->trackingGeometry()->idToDet(ch.id())->surface());
     if (!tsosCurrent.isValid()) return Trajectory();
