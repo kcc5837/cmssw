@@ -923,5 +923,3 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   
   g_nNumTest++;
 }
-
-
