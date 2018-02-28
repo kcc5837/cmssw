@@ -29,10 +29,10 @@ options.register('idxJob',
 
 options.parseArguments()
 
-# Insert the type 0 , S , L of the superchambers in 15 positions: frontal view
+# Insert the type 0 , S , L of the superchambers in 15 positions: frontal view, 90 deg rotated
 SuperChType = ['L','L','L','L','L',\
-			   'S','S','S','S','S',\
-			   'S','S','S','S','S']
+			   'L','S','S','S','L',\
+			   'L','S','S','S','L']		   
 
 # Calculation of SuperChSeedingLayers from SuperChType
 SuperChSeedingLayers = [1,3, 0,0, 0,0, 0,0, 4,2,\
@@ -336,7 +336,7 @@ process.gemSegments.preClustering = cms.bool(False)
 process.gemSegments.preClusteringUseChaining = cms.bool(False)
 
 process.simMuonGEMDigis.averageEfficiency = cms.double(0.98)
-process.simMuonGEMDigis.averageNoiseRate = cms.double(0.05)
+process.simMuonGEMDigis.averageNoiseRate = cms.double(0.0)
 process.simMuonGEMDigis.doBkgNoise = cms.bool(False)
 process.simMuonGEMDigis.doNoiseCLS = cms.bool(False)
 process.simMuonGEMDigis.simulateElectronBkg = cms.bool(False)
