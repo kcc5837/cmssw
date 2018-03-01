@@ -70,9 +70,11 @@ gemcrValidation::gemcrValidation(const edm::ParameterSet& cfg): GEMBaseValidatio
   theSmoother = new CosmicMuonSmoother(smootherPSet, theService);
   theUpdator = new KFUpdator();
   time(&rawTime);
-  printf("End of gemcrValidation::gemcrValidation() at %s\n", asctime(localtime(&rawTime)));
 
   edm::Service<TFileService> fs;
+  hev = fs->make<TH1D>("hev","EventSummary",3,1,3);
+  hvfatHit_numerator = fs->make<TH3D>("hvfatHit_numerator","vfat hit (numerator of efficiency)",8,0,8,9,0,9,10,0,10);
+  hvfatHit_denominator = fs->make<TH3D>("hvfatHit_denominator","vfat hit (denominator of efficienct)",8,0,8,9,0,9,10,0,10);
   tree = fs->make<TTree>("tree", "Tree for QC8");
   tree->Branch("run",&run,"run/I");
   tree->Branch("lumi",&lumi,"lumi/I");
@@ -85,22 +87,55 @@ gemcrValidation::gemcrValidation(const edm::ParameterSet& cfg): GEMBaseValidatio
   tree->Branch("genMuY",&genMuY,"genMuY/F");
   tree->Branch("genMuZ",&genMuZ,"genMuZ/F");
 
+  tree->Branch("trajTheta",&trajTheta,"trajTheta/F");
+  tree->Branch("trajPhi",&trajPhi,"trajPhi/F");
+  tree->Branch("trajX",&trajX,"trajX/F");
+  tree->Branch("trajY",&trajY,"trajY/F");
+  tree->Branch("trajZ",&trajZ,"trajZ/F");
+  tree->Branch("trajPx",&trajPx,"trajPx/F");
+  tree->Branch("trajPy",&trajPy,"trajPy/F");
+  tree->Branch("trajPz",&trajPz,"trajPz/F");
+
   tree->Branch("vfatI",vfatI,"vfatI[30][3][8]/I");
   tree->Branch("vfatF",vfatF,"vfatF[30][3][8]/I");
 
-  tree->Branch("nglobalRecHit",&nglobalRecHit,"nglobalRecHit/I"); //number of total recHit per event
-  tree->Branch("globalRecHitTheta",globalRecHitTheta,"globalRecHitTheta[nglobalRecHit]/F");
-  tree->Branch("globalRecHitPhi",globalRecHitPhi,"globalRecHitPhi[nglobalRecHit]/F");
-  tree->Branch("globalRecHitX",globalRecHitX,"globalRecHitX[nglobalRecHit]/F");
-  tree->Branch("globalRecHitY",globalRecHitY,"globalRecHitY[nglobalRecHit]/F");
-  tree->Branch("globalRecHitZ",globalRecHitZ,"globalRecHitZ[nglobalRecHit]/F");
+  tree->Branch("trajHitX",trajHitX,"trajHitX[30][3][8]/F");
+  tree->Branch("trajHitY",trajHitY,"trajHitY[30][3][8]/F");
+  tree->Branch("trajHitZ",trajHitZ,"trajHitZ[30][3][8]/F");
+  tree->Branch("recHitX",recHitX,"recHitX[30][3][8]/F");
+  tree->Branch("recHitY",recHitY,"recHitY[30][3][8]/F");
+  tree->Branch("recHitZ",recHitZ,"recHitZ[30][3][8]/F");
+  tree->Branch("genHitX",genHitX,"genHitX[30][3][8]/F");
+  tree->Branch("genHitY",genHitY,"genHitY[30][3][8]/F");
+  tree->Branch("genHitZ",genHitZ,"genHitZ[30][3][8]/F");
 
-  tree->Branch("nTotTrajRecHit",&nTotTrajRecHit,"nTotTrajRecHit/I"); //number of total recHit associated track per event
-  tree->Branch("trajRecHitTheta",trajRecHitTheta,"trajRecHitTheta[nTotTrajRecHit]/F");
-  tree->Branch("trajRecHitPhi",trajRecHitPhi,"trajRecHitPhi[nTotTrajRecHit]/F");
-  tree->Branch("trajRecHitX",trajRecHitX,"trajRecHitX[nTotTrajRecHit]/F");
-  tree->Branch("trajRecHitY",trajRecHitY,"trajRecHitY[nTotTrajRecHit]/F");
-  tree->Branch("trajRecHitZ",trajRecHitZ,"trajRecHitZ[nTotTrajRecHit]/F");
+  tree->Branch("floorHitX",floorHitX,"floorHitX[10]/F");
+  tree->Branch("floorHitY",floorHitY,"floorHitY[10]/F");
+  tree->Branch("floorHitZ",floorHitZ,"floorHitZ[10]/F");
+
+  //tree->Branch("diffX",diffX,"diffX[30][3][8]/F"); //distance between trajHit and genHit per vfat
+  //tree->Branch("diffZ",diffZ,"diffZ[30][3][8]/F"); //distance between trajHit and genHit per vfat
+  //tree->Branch("diffXZ",diffXZ,"diffXZ[30][3][8]/F"); //distance between trajHit and genHit in XZ plane per vfat
+
+  //tree->Branch("nTotTrajRecHit",&nTotTrajRecHit,"nTotTrajRecHit/I"); //number of total recHit associated track per event
+  //tree->Branch("trajRecHitTheta",trajRecHitTheta,"trajRecHitTheta[nTotTrajRecHit]/F");
+  //tree->Branch("trajRecHitPhi",trajRecHitPhi,"trajRecHitPhi[nTotTrajRecHit]/F");
+
+  //tree->Branch("nglobalRecHit",&nglobalRecHit,"nglobalRecHit/I"); //number of total recHit per event
+  //tree->Branch("globalRecHitTheta",globalRecHitTheta,"globalRecHitTheta[nglobalRecHit]/F");
+  //tree->Branch("globalRecHitPhi",globalRecHitPhi,"globalRecHitPhi[nglobalRecHit]/F");
+  //tree->Branch("globalRecHitX",globalRecHitX,"globalRecHitX[nglobalRecHit]/F");
+  //tree->Branch("globalRecHitY",globalRecHitY,"globalRecHitY[nglobalRecHit]/F");
+  //tree->Branch("globalRecHitZ",globalRecHitZ,"globalRecHitZ[nglobalRecHit]/F");
+
+  //tree->Branch("nTotTrajRecHit",&nTotTrajRecHit,"nTotTrajRecHit/I"); //number of total recHit associated track per event
+  //tree->Branch("trajRecHitTheta",trajRecHitTheta,"trajRecHitTheta[nTotTrajRecHit]/F");
+  //tree->Branch("trajRecHitPhi",trajRecHitPhi,"trajRecHitPhi[nTotTrajRecHit]/F");
+  //tree->Branch("trajRecHitX",trajRecHitX,"trajRecHitX[nTotTrajRecHit]/F");
+  //tree->Branch("trajRecHitY",trajRecHitY,"trajRecHitY[nTotTrajRecHit]/F");
+  //tree->Branch("trajRecHitZ",trajRecHitZ,"trajRecHitZ[nTotTrajRecHit]/F");
+
+  printf("End of gemcrValidation::gemcrValidation() at %s\n", asctime(localtime(&rawTime)));
 }
 
 MonitorElement* g_resXRTSim;
@@ -181,7 +216,7 @@ void gemcrValidation::bookHistograms(DQMStore::IBooker & ibooker, edm::Run const
   
   
   for(int c = 0; c<n_ch; c++){
-   cout << gemChambers[c].id() << endl;
+   //cout << gemChambers[c].id() << endl;
    GEMDetId gid = gemChambers[c].id();
    string b_name = "chamber_"+to_string(gid.chamber())+"_layer_"+to_string(gid.layer());
    tr_chamber->setBinLabel(c+1,b_name);
@@ -347,6 +382,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   lumi = e.id().luminosityBlock();
   nev = e.id().event();
   if(nev%1000==0) cout<<"nev "<<nev<<endl;
+  hev->Fill(1);
 
   for(int i=0;i<maxNlayer;i++)
   {
@@ -356,6 +392,18 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
       {
         vfatI[i][j][k] = 0;
         vfatF[i][j][k] = 0;
+        trajHitX[i][j][k] = 0;
+        trajHitY[i][j][k] = 0;
+        trajHitZ[i][j][k] = 0;
+        recHitX[i][j][k] = 0;
+        recHitY[i][j][k] = 0;
+        recHitZ[i][j][k] = 0;
+        genHitX[i][j][k] = 0;
+        genHitY[i][j][k] = 0;
+        genHitZ[i][j][k] = 0;
+        //diffX[i][j][k] = 0;
+        //diffZ[i][j][k] = 0;
+        //diffXZ[i][j][k] = -1;
       }
     }
   }
@@ -366,8 +414,24 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   genMuY = 0;
   genMuZ = 0;
 
-  nglobalRecHit = 0;
-  nTotTrajRecHit = 0;
+  trajTheta = -10;
+  trajPhi = -10;
+  trajX = 0;
+  trajY = 0;
+  trajZ = 0;
+  trajPx = 0;
+  trajPy = 0;
+  trajPz = 0;
+
+  for(int i=0;i<maxNfloor;i++)
+  {
+    floorHitX[i] = 0;
+    floorHitY[i] = 0;
+    floorHitZ[i] = 0;
+  }
+
+  //nglobalRecHit = 0;
+  //nTotTrajRecHit = 0;
 //  for(int i=0;i<maxNRecHit;i++)
 //  {
 //    globalRecHitTheta[i] = -10;
@@ -465,30 +529,19 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   int nNumCurrFiredCh = 0;
   HepMC::GenParticle *genMuon = NULL;
   
+  double gen_px = 0;
+  double gen_py = 0;
+  double gen_pz = 0;
+  double gen_pt = 0;
+  double gen_theta = 0;
+  double gen_phi = 0;
+
   if ( isMC )
   {
     edm::Handle<edm::HepMCProduct> genVtx;
     e.getByToken( this->InputTagToken_US, genVtx);
     genMuon = genVtx->GetEvent()->barcode_to_particle(1);
     
-    //double gen_px = genMuon->momentum().x();
-    //double gen_py = genMuon->momentum().y();
-    double gen_pt = genMuon->momentum().perp();
-    double gen_theta = genMuon->momentum().theta();
-    double gen_phi = genMuon->momentum().phi();
-    //cout<<"nev "<<nev<<", genMuon : px "<<gen_px<<", py "<<gen_py<<", pt "<<gen_pt<<", theta "<<gen_theta<<", phi "<<gen_phi<<endl;
-    genMuPt = gen_pt;
-    genMuTheta = gen_theta;
-    genMuPhi = gen_phi;    
-
-    double vertexX = genMuon->production_vertex()->position().x();
-    double vertexY = genMuon->production_vertex()->position().y();
-    double vertexZ = genMuon->production_vertex()->position().z();
-    genMuX = vertexX;
-    genMuY = vertexY;
-    genMuZ = vertexZ;
-    //cout<<"nev "<<nev<<", vertexX "<<vertexX<<", vertexY "<<vertexY<<", vertexZ "<<vertexZ<<endl;
-
     double dUnitGen = 0.1;
     
     fXGenGP1x = dUnitGen * genMuon->production_vertex()->position().x();
@@ -505,6 +558,24 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     fVecX = genMuon->momentum().x() / genMuon->momentum().y();
     fVecZ = genMuon->momentum().z() / genMuon->momentum().y();
     
+    gen_px = genMuon->momentum().x();
+    gen_py = genMuon->momentum().y();
+    gen_pz = genMuon->momentum().z();
+    gen_pt = genMuon->momentum().perp();
+    gen_theta = genMuon->momentum().theta();
+    gen_phi = genMuon->momentum().phi();
+
+    genMuPt = gen_pt;
+    genMuTheta = gen_theta;
+    genMuPhi = gen_phi;    
+
+    genMuX = fXGenGP1x;
+    genMuY = fXGenGP1y;
+    genMuZ = fXGenGP1z;
+    //https://brilliant.org/wiki/3d-coordinate-geometry-equation-of-a-line
+    //3D line equation for genMuon (generated track) : (x - genMuX)/gen_px = (y - genMuY)/gen_py = (z - genMuZ)/gen_pz;
+    //if y=y0 then x = genMuX + (y0-genMuY)*(gen_px/gen_py),  z = genMuZ + (y0-genMuY)*(gen_pz/gen_py)
+
     for ( GEMRecHitCollection::const_iterator recHit = gemRecHits->begin(); recHit != gemRecHits->end(); ++recHit )
     {
       int nIdxCh = findIndex((*recHit).gemId());
@@ -520,6 +591,8 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
       
       Float_t fXGenHitX = fXGenGP1x + fDiffY * fVecX;
       Float_t fXGenHitZ = fXGenGP1z + fDiffY * fVecZ;
+      //Float_t diffXZ = sqrt( (recHitGP.x()-fXGenHitX)*(recHitGP.x()-fXGenHitX) + (recHitGP.z()-fXGenHitZ)*(recHitGP.z()-fXGenHitZ) ) ;
+      //cout<<"nev "<<nev<<", fXGenHitX "<<fXGenHitX<<", fXGenHitZ "<<fXGenHitZ<<", diffXZ "<<diffXZ<<endl;
 
       strKeep += TString::Format("  recHit : %i, RECO : (%0.5f, %0.5f, %0.5f) <... GEN : (%0.5f, %0.5f, %0.5f)\n", nIdxCh + 1, recHitGP.x(), recHitGP.z(), recHitGP.y(), fXGenHitX, fXGenHitZ, recHitGP.y());
       
@@ -591,7 +664,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   }
   TString strListRecHit("");
 
-  nglobalRecHit = gemRecHits->size();
+  //nglobalRecHit = gemRecHits->size();
   int nhit = 0;
   for (GEMRecHitCollection::const_iterator recHit = gemRecHits->begin(); recHit != gemRecHits->end(); ++recHit){
 
@@ -616,11 +689,11 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     Float_t     rh_g_Y = recHitGP.y();
     Float_t     rh_g_Z = recHitGP.z();
 
-    globalRecHitTheta[nhit] = recHitGP.theta();
-    globalRecHitPhi[nhit] = recHitGP.phi();
-    globalRecHitX[nhit] = recHitGP.x();
-    globalRecHitY[nhit] = recHitGP.y();
-    globalRecHitZ[nhit] = recHitGP.z();
+    //globalRecHitTheta[nhit] = recHitGP.theta();
+    //globalRecHitPhi[nhit] = recHitGP.phi();
+    //globalRecHitX[nhit] = recHitGP.x();
+    //globalRecHitY[nhit] = recHitGP.y();
+    //globalRecHitZ[nhit] = recHitGP.z();
     //cout<<"nev "<<nev<<", eta "<<recHitGP.eta()<<", theta "<<globalRecHitTheta[nhit]<<", phi "<<globalRecHitPhi[nhit]<<", z "<<globalRecHitZ[nhit]<<endl;
     nhit++;
 
@@ -775,6 +848,17 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     
     Float_t fTrackVelX = gvecTrack.x() / gvecTrack.y();
     Float_t fTrackVelZ = gvecTrack.z() / gvecTrack.y();
+
+    trajTheta = gvecTrack.theta();
+    trajPhi = gvecTrack.phi();
+    trajX = trackPCA.x();
+    trajY = trackPCA.y();
+    trajZ = trackPCA.z();
+    trajPx = gvecTrack.x();
+    trajPy = gvecTrack.y();
+    trajPz = gvecTrack.z();
+    //GlobalVector gvecTrack2(-trackPCA.x(), -trackPCA.y(), -trackPCA.z());
+    //cout<<"nev "<<nev<<", genMuTheta "<<genMuTheta<<", genMuPhi "<<genMuPhi<<", trajTheta "<<trajTheta<<", trajPhi "<<trajPhi<<", trajTheta2 "<<gvecTrack2.theta()<<", trajPhi2 "<<gvecTrack2.phi()<<endl;
     
     Float_t fSeedP1x = 0.0, fSeedP1y = 0.0, fSeedP1z = 0.0;
     Float_t fSeedP2x = 0.0, fSeedP2y = 0.0, fSeedP2z = 0.0;
@@ -854,6 +938,38 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
           int imRoll = mRoll - 1;
           vfatI[idx][ivfat][imRoll]=1;
 
+          int n1 = imRoll;
+          //int n2 = 2-ivfat + int(2-idx/10)*3;
+          int n2 = ivfat + int(2-idx/10)*3;
+          int n3 = idx%10;
+          hvfatHit_denominator->Fill(n1,n2,n3);
+
+          //1 radian = 57.2958 degree
+          //angle between trajectory(3D vector) and XZ plane
+          //double angle = acos(sqrt(sin(trajTheta)*cos(trajPhi)*sin(trajTheta)*cos(trajPhi) + cos(trajPhi)*cos(trajPhi)))*57.2958;
+          //if((idx/10==0&&ivfat==2)||(idx/10==2&&ivfat==0))
+          //{
+            //cut for vfats at the edge of QC8
+            //if(angle>80) hvfatHit_denominator->Fill(n1,n2,n3);
+          //}
+          //else hvfatHit_denominator->Fill(n1,n2,n3);
+
+          //double genHitX = genMuX + (gtrp.y()-genMuY)*(gen_px/gen_py);
+          //double genHitZ = genMuZ + (gtrp.y()-genMuY)*(gen_pz/gen_py);
+          genHitX[idx][ivfat][imRoll] = genMuX + (gtrp.y()-genMuY)*(gen_px/gen_py);
+          genHitY[idx][ivfat][imRoll] = gtrp.y();
+          genHitZ[idx][ivfat][imRoll] = genMuZ + (gtrp.y()-genMuY)*(gen_pz/gen_py);
+          trajHitX[idx][ivfat][imRoll] = gtrp.x();
+          trajHitY[idx][ivfat][imRoll] = gtrp.y();
+          trajHitZ[idx][ivfat][imRoll] = gtrp.z();
+          //diffX[idx][ivfat][imRoll] = gtrp.x()-genHitX;
+          //diffZ[idx][ivfat][imRoll] = gtrp.z()-genHitZ;
+          //diffXZ[idx][ivfat][imRoll] = sqrt( pow(gtrp.x()-genHitX,2) + pow(gtrp.z()-genHitZ,2) );
+          int floor = idx%10;
+          floorHitX[floor] = gtrp.x();
+          floorHitY[floor] = gtrp.y();
+          floorHitZ[floor] = gtrp.z();
+
           gem_chamber_th2D_eff[index]->Fill(vfat, mRoll);                
           gem_chamber_thxroll_eff[index]->Fill(tlp.x(), mRoll);
           gem_chamber_thxy_eff[index]->Fill(tlp.x(), gtrp.z());
@@ -903,14 +1019,28 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
 
             nTrajRecHit++;
             
-            trajRecHitTheta[nTotTrajRecHit] = recHitGP.theta();
-            trajRecHitPhi[nTotTrajRecHit] = recHitGP.phi();
-            trajRecHitX[nTotTrajRecHit] = recHitGP.x();
-            trajRecHitY[nTotTrajRecHit] = recHitGP.y();
-            trajRecHitZ[nTotTrajRecHit] = recHitGP.z();
-            nTotTrajRecHit++;
+            //trajRecHitTheta[nTotTrajRecHit] = recHitGP.theta();
+            //trajRecHitPhi[nTotTrajRecHit] = recHitGP.phi();
+            //trajRecHitX[nTotTrajRecHit] = recHitGP.x();
+            //trajRecHitY[nTotTrajRecHit] = recHitGP.y();
+            //trajRecHitZ[nTotTrajRecHit] = recHitGP.z();
+            //nTotTrajRecHit++;
+            recHitX[idx][ivfat][imRoll] = recHitGP.x();
+            recHitY[idx][ivfat][imRoll] = recHitGP.y();
+            recHitZ[idx][ivfat][imRoll] = recHitGP.z();
+            //if(idx==0&&ivfat==0&&imRoll==0) cout<<"nev "<<nev<<", trajHitX "<<trajHitX[idx][ivfat][imRoll]<<", trajHitY "<<trajHitY[idx][ivfat][imRoll]<<", trajHitZ "<<trajHitZ[idx][ivfat][imRoll]<<", genHitX "<<genHitX[idx][ivfat][imRoll]<<", genHitY "<<genHitY[idx][ivfat][imRoll]<<", genHitZ "<<genHitZ[idx][ivfat][imRoll]<<", recHitX "<<recHitGP.x()<<", recHitY "<<recHitGP.y()<<", recHitZ "<<recHitGP.z()<<endl;
+
           
             vfatF[idx][ivfat][imRoll]=1;
+
+            hvfatHit_numerator->Fill(n1,n2,n3);
+
+            //if((idx/10==0&&ivfat==2)||(idx/10==2&&ivfat==0))
+            //{
+              //cut for vfats at the edge of QC8
+              //if(angle>80) hvfatHit_numerator->Fill(n1,n2,n3);
+            //}
+            //else hvfatHit_numerator->Fill(n1,n2,n3);
 
             gem_chamber_tr2D_eff[index]->Fill(vfat, mRoll);
             gem_chamber_trxroll_eff[index]->Fill(tlp.x(), mRoll);
@@ -1004,6 +1134,8 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   g_nNumTest++;
 
   tree->Fill();
+
+  hev->Fill(2);
 }
 
 //void gemcrValidation::endJob() {

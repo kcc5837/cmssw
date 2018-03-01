@@ -134,6 +134,9 @@ private:
   //int CalcDiffGenRec(GPSeed *pVecSeed, GlobalPoint *pPCurr);
 
 
+  TH1D *hev;
+  TH3D *hvfatHit_numerator;
+  TH3D *hvfatHit_denominator;
   TTree *tree;
   int run;
   int lumi;
@@ -144,26 +147,51 @@ private:
   float genMuX;
   float genMuY;
   float genMuZ;
+
+  float trajTheta;
+  float trajPhi;
+  float trajX;
+  float trajY;
+  float trajZ;
+  float trajPx;
+  float trajPy;
+  float trajPz;
   const static int maxNlayer = 30;
   const static int maxNphi = 3;
   const static int maxNeta = 8;
   int vfatI[maxNlayer][maxNphi][maxNeta];
   int vfatF[maxNlayer][maxNphi][maxNeta];
+  float trajHitX[maxNlayer][maxNphi][maxNeta];
+  float trajHitY[maxNlayer][maxNphi][maxNeta];
+  float trajHitZ[maxNlayer][maxNphi][maxNeta];
+  float recHitX[maxNlayer][maxNphi][maxNeta];
+  float recHitY[maxNlayer][maxNphi][maxNeta];
+  float recHitZ[maxNlayer][maxNphi][maxNeta];
+  float genHitX[maxNlayer][maxNphi][maxNeta];
+  float genHitY[maxNlayer][maxNphi][maxNeta];
+  float genHitZ[maxNlayer][maxNphi][maxNeta];
+  //float diffX[maxNlayer][maxNphi][maxNeta];
+  //float diffZ[maxNlayer][maxNphi][maxNeta];
+  //float diffXZ[maxNlayer][maxNphi][maxNeta];
+  const static int maxNfloor = 10;
+  float floorHitX[maxNfloor];
+  float floorHitY[maxNfloor];
+  float floorHitZ[maxNfloor];
 
-  const static int maxNRecHit = 100;
-  int nglobalRecHit;
-  float globalRecHitTheta[maxNRecHit];
-  float globalRecHitPhi[maxNRecHit];
-  float globalRecHitX[maxNRecHit];
-  float globalRecHitY[maxNRecHit];
-  float globalRecHitZ[maxNRecHit];
+  //const static int maxNRecHit = 100;
+  //int nglobalRecHit;
+  //float globalRecHitTheta[maxNRecHit];
+  //float globalRecHitPhi[maxNRecHit];
+  //float globalRecHitX[maxNRecHit];
+  //float globalRecHitY[maxNRecHit];
+  //float globalRecHitZ[maxNRecHit];
 
-  int nTotTrajRecHit;
-  float trajRecHitTheta[maxNRecHit];
-  float trajRecHitPhi[maxNRecHit];
-  float trajRecHitX[maxNRecHit];
-  float trajRecHitY[maxNRecHit];
-  float trajRecHitZ[maxNRecHit];
+  //int nTotTrajRecHit;
+  //float trajRecHitTheta[maxNRecHit];
+  //float trajRecHitPhi[maxNRecHit];
+  //float trajRecHitX[maxNRecHit];
+  //float trajRecHitY[maxNRecHit];
+  //float trajRecHitZ[maxNRecHit];
 
 };
 

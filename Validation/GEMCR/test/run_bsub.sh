@@ -1,14 +1,18 @@
 #! /bin/sh
 
-RUN=$1
-NeventsPerJob=$2
+NeventsPerJob=$1
+RUN=$2
 JobId=$3
-
-runFile=runGEMCosmicStand_sim_temp_${RUN}_${JobId}.py
+srcFile=runGEMCosmicStand_sim_new.py
 
 srcDir=/afs/cern.ch/user/j/jslee/gemcrs/src
 workDir=$srcDir/Validation/GEMCR/test
-resultDir=$workDir/Tree
+tempDir=/tmp/jslee
+#runDir=$workDir
+#resultDir=$workDir/Tree
+resultDir=/afs/cern.ch/work/j/jslee/QC8
+
+runFile=runGEMCosmicStand_sim_temp_${RUN}_${JobId}.py
 
 cd $srcDir
 eval `scramv1 runtime -sh`
@@ -21,11 +25,28 @@ cd $workDir
 sed -e 's/"runNum",1,/"runNum",'${RUN}',/' \
     -e 's/"eventsPerJob",10000,/"eventsPerJob",'${NeventsPerJob}',/' \
     -e 's/"idxJob","-1",/"idxJob","'${JobId}'",/' \
-    -e 's/out_reco_MC.root/out_reco_MC_'${RUN}'_'${JobId}'.root/' runGEMCosmicStand_sim.py > ${runFile}
-    #-e 's/temp_/temp_'${RUN}'_'${JobId}'_/' runGEMCosmicStand_sim.py > runGEMCosmicStand_sim_temp_${RUN}_${JobId}.py
+    -e 's/out_reco_MC.root/out_reco_MC_'${RUN}'_'${JobId}'.root/' \
+    -e 's#file:#file:'${tempDir}'/#' \
+    -e 's#temp_#'${tempDir}'/temp_#' ${srcFile} > ${runFile}
+    #-e 's/out_reco_MC.root/out_reco_MC_'${RUN}'_'${JobId}'.root/' runGEMCosmicStand_sim.py > ${runFile}
 
+#mv $runFile $runDir
+#cd $runDir
 chmod 777 ${runFile}
 cmsRun ${runFile}
-mv temp_out_reco_MC_${RUN}_${JobId}.root ${resultDir}
-rm out_reco_MC_${RUN}_${JobId}.root
+rm ${tempDir}/out_reco_MC_${RUN}_${JobId}.root
+mv ${tempDir}/temp_out_reco_MC_${RUN}_${JobId}.root ${resultDir}
 rm ${runFile}
+
+#sleep 5
+fileName=`find . -type f -name 'core.*'`
+for file in $fileName
+do
+  rm $file
+done
+LSFjobName=`find . -type d -name 'LSFJOB_*'`
+for file in $LSFjobName
+do
+  rm -rf ${file}
+done
+

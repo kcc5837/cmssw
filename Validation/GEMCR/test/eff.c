@@ -1,19 +1,27 @@
 {
 
-int drawOn=1;
-int printOn=1;
+int drawOn=0;
+int printOn=0;
 int calc_eff_vfat_On=1;
 //If you want to see eff vs layer or eff vs chamber without eff vs vfat then set calc_eff_vfat_On=0.
 int setMinimumOn=1;
+int makeTreeOn=1;
+int cal_eff_from_tree_On=0;
 
-TFile *f = new TFile("Tree/temp_out_reco_MC.root");
-f->cd("gemcrValidation");
+TString run = "112";
+TString srcDir = "/afs/cern.ch/work/j/jslee/QC8";
+TString filename = "temp_out_reco_MC_"+run;
+//TString srcDir = "/tmp/jslee";
+//TString filename = "temp_out_reco_MC_9_1";
+TFile *f = new TFile(srcDir+"/"+filename+".root");
+//f->cd("gemcrValidation");
 //TTree *tree = (TTree*)f->get("tree");
 
 const int maxNchamber = 15;
 const int maxNlayer = 30;
 const int maxNphi = 3;
 const int maxNeta = 8;
+const int maxNvfat = 720;
 
 double maxVfatEff = -1;
 double minVfatEff = 100;
@@ -23,6 +31,29 @@ double vfatEff[maxNlayer][maxNphi][maxNeta];
 double vfatEffError[maxNlayer][maxNphi][maxNeta];
 TH1D *hvfatEff[maxNlayer];
 TH2D *hvfatEff2[maxNlayer];
+TH2D *hvfatEff3[maxNlayer];
+
+
+TFile *fEff;
+TTree *tree;
+//TFile *fEff = new TFile(srcDir+"/"+filename+"_eff.root","recreate");
+//TTree *tree = new TTree("tree","Tree for efficiency of vfat");
+int vfat=0, layer=0, phi=0, eta=0;
+float eff=0, error=0;
+if(makeTreeOn)
+{
+	fEff = new TFile(srcDir+"/"+filename+"_eff.root","recreate");
+	tree = new TTree("tree","Tree for efficiency of vfat");
+	//tree->Branch("",&,"");
+	tree->Branch("layer",&layer,"layer/I");
+	tree->Branch("phi",&phi,"phi/I");
+	tree->Branch("eta",&eta,"eta/I");
+	tree->Branch("vfat",&vfat,"vfat/I");
+	tree->Branch("eff",&eff,"eff/F");
+	tree->Branch("error",&error,"error/F");
+}
+
+f->cd("gemcrValidation");
 
 long maxVfatNumerator = -1;
 long minVfatNumerator = 10000000;
@@ -75,12 +106,16 @@ if(drawOn)
 	c2 = new TCanvas("c2","c2",700,500);
 	c2->SetRightMargin(0.15);
 }
+
+TString hname;
+TString htitle;
+TString png;
 //int i=0;
 //for(int i=18;i<20;i++)
 for(int i=0;i<maxNlayer;i++)
 {
-	TString hname = Form("hvfat_%d",i);
-	TString htitle = Form("Efficiency VS VFAT (Chamber%d Layer%d)",nch*2+1,i%2+1);
+	hname = Form("hvfat_%d",i);
+	htitle = Form("Efficiency VS VFAT (Chamber%d Layer%d)",nch*2+1,i%2+1);
 	hvfatEff[i] = new TH1D(hname,htitle,maxNphi*maxNeta,0,maxNphi*maxNeta);
 	hvfatEff[i]->GetXaxis()->SetTitle("VFAT num");
 	hvfatEff[i]->SetMaximum(1.005);
@@ -120,19 +155,47 @@ for(int i=0;i<maxNlayer;i++)
 	{
 		for(int k=0, k2=maxNeta;k<maxNeta;k++, k2--)
 		{
+			int n1 = k; //n1 = 0,1,2,3,4,5,6,7
+			int n2 = 2-j+(int)(2-i/10)*3; // n2 = 8 7 6 5 4 3 2 1 0
+			//int n2 = j+(int)(2-i/10)*3; // n2 = 6 7 8 3 4 5 0 1 2
+			int n3 = i%10; // n3 = 0,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9
 			//int vfatId = i*100 + j*10 + k;
 			TString cutI = Form("vfatI[%d][%d][%d]==1",i,j,k);
 			TString cutF = cutI+"&&"+Form("vfatF[%d][%d][%d]==1",i,j,k);
-			vfatI[i][j][k] = tree->GetEntries(cutI);
-			vfatF[i][j][k] = tree->GetEntries(cutF);
+			if(cal_eff_from_tree_On)
+			{
+				vfatI[i][j][k] = tree->GetEntries(cutI);
+				vfatF[i][j][k] = tree->GetEntries(cutF);
+			}
+			else
+			{
+				vfatI[i][j][k] = hvfatHit_denominator->GetBinContent(n1+1, n2+1, n3+1);
+				vfatF[i][j][k] = hvfatHit_numerator->GetBinContent(n1+1, n2+1, n3+1);
+			}
 			if(vfatI[i][j][k]>0)
 			{
 				vfatEff[i][j][k] = double(vfatF[i][j][k])/vfatI[i][j][k];
 				vfatEffError[i][j][k] = sqrt(vfatEff[i][j][k]*(1-vfatEff[i][j][k])/vfatI[i][j][k]);
-				cout<<"i "<<i<<", j "<<j<<", k "<<k<<", vfatF "<<vfatF[i][j][k]<<", vfatI "<<vfatI[i][j][k]<<", eff "<<vfatEff[i][j][k]<<" +- "<<vfatEffError[i][j][k]<<endl;
+				//cout<<"i "<<i<<", j "<<j<<", k "<<k<<", vfatF "<<vfatF[i][j][k]<<", vfatI "<<vfatI[i][j][k]<<", eff "<<vfatEff[i][j][k]<<" +- "<<vfatEffError[i][j][k]<<endl;
 
 				if(maxVfatEff < vfatEff[i][j][k]) maxVfatEff = vfatEff[i][j][k];
 				if(minVfatEff > vfatEff[i][j][k]) minVfatEff = vfatEff[i][j][k];
+
+				if(makeTreeOn)
+				{
+//					layer = i;
+//					phi = j;
+//					eta = k;
+//					n2 = 2-j+(int)(2-i/10)*3;
+					layer = n3;
+					phi = n2;
+					eta = n1;
+					eff = vfatEff[i][j][k];
+					error = vfatEffError[i][j][k];
+					vfat++;
+					tree->Fill();
+					cout<<"n3 "<<n3<<", n2 "<<n2<<", n1 "<<n1<<", vfatF "<<vfatF[i][j][k]<<", vfatI "<<vfatI[i][j][k]<<", eff "<<vfatEff[i][j][k]<<" +- "<<vfatEffError[i][j][k]<<endl;
+				}
 			}
 
 			cutLayerI += "||"+cutI;
@@ -165,28 +228,29 @@ for(int i=0;i<maxNlayer;i++)
 		hvfatEff[i]->Draw();
 		hvfatEff[i]->Fit("pol0");
 //		func->Draw("same");
-		TString png = Form("Tree/eff_VS_vfat_of_chamber%d_layer%d.png",nch*2+1,i%2+1);
+		png = Form(srcDir+"/png/eff_VS_vfat_of_chamber%d_layer%d.png",nch*2+1,i%2+1);
 		if(printOn) c1->Print(png);
 
 		c2->cd();
 		hvfatEff2[i]->Draw("colz text");
-		png = Form("Tree/eff_VS_vfat_of_chamber%d_layer%d_2D.png",nch*2+1,i%2+1);
+		png = Form(srcDir+"/png/eff_VS_vfat_of_chamber%d_layer%d_2D.png",nch*2+1,i%2+1);
 		if(printOn) c2->Print(png);
 
 		hvfatNumerator[i]->Draw("colz text");
-//		png = Form("Tree/calc_eff_of_chamber%d_layer%d_for_numerator.png",nch*2+1,i%2+1);
-		png = Form("Tree/eff_VS_vfat_of_chamber%d_layer%d_Numerator.png",nch*2+1,i%2+1);
+		png = Form(srcDir+"/png/eff_VS_vfat_of_chamber%d_layer%d_Numerator.png",nch*2+1,i%2+1);
 		if(printOn) c2->Print(png);
 		hvfatDenominator[i]->Draw("colz text");
-//		png = Form("Tree/calc_eff_of_chamber%d_layer%d_for_Denominator.png",nch*2+1,i%2+1);
-		png = Form("Tree/eff_VS_vfat_of_chamber%d_layer%d_Denominator.png",nch*2+1,i%2+1);
+		png = Form(srcDir+"/png/eff_VS_vfat_of_chamber%d_layer%d_Denominator.png",nch*2+1,i%2+1);
 		if(printOn) c2->Print(png);
 	}
 	cutLayerI = Form("vfatI[%d]==1",i);
 	cutLayerF = cutLayerI + "&&" + Form("vfatF[%d]==1",i);
 //	cout<<"i "<<i<<", cutLayerF "<<cutLayerF<<", cutLayerI "<<cutLayerI<<endl;
-	layerI[i] = tree->GetEntries(cutLayerI);
-	layerF[i] = tree->GetEntries(cutLayerF);
+	if(cal_eff_from_tree_On)
+	{
+		layerI[i] = tree->GetEntries(cutLayerI);
+		layerF[i] = tree->GetEntries(cutLayerF);
+	}
 	if(layerI[i]>0)
 	{
 		c1->cd();
@@ -206,13 +270,13 @@ for(int i=0;i<maxNlayer;i++)
 	htitle = Form("hit multiplicity (Chamber%d Layer%d)",nch*2+1,i%2+1);
 	hlayerHitMul[i] = new TH1D(hname,htitle,10,0,10);
 	hlayerHitMul[i]->GetXaxis()->SetTitle("nRecHit");
-	tree->Project(hname, cutLayerHitMul);
+	if(cal_eff_from_tree_On) tree->Project(hname, cutLayerHitMul);
 
 	if(drawOn)
 	{
 		c1->cd();
 		hlayerHitMul[i]->Draw();
-		TString png = Form("Tree/hit_multiplicity_of_chamber%d_layer%d.png",nch*2+1,i%2+1);
+		png = Form(srcDir+"/png/hit_multiplicity_of_chamber%d_layer%d.png",nch*2+1,i%2+1);
 		if(printOn) c1->Print(png);
 
 		int maxHitMul = 0;
@@ -232,8 +296,11 @@ for(int i=0;i<maxNlayer;i++)
 	if(i%2==1)
 	{
 //		cout<<"nch "<<nch<<", cutChamberF "<<cutChamberF<<", cutChamberI "<<cutChamberI<<endl;
-		chamberI[nch] = tree->GetEntries(cutChamberI);
-		chamberF[nch] = tree->GetEntries(cutChamberF);
+		if(cal_eff_from_tree_On)
+		{
+			chamberI[nch] = tree->GetEntries(cutChamberI);
+			chamberF[nch] = tree->GetEntries(cutChamberF);
+		}
 		if(chamberI[nch]>0)
 		{
 			chamberEff[nch] = double(chamberF[nch])/chamberI[nch];
@@ -252,13 +319,13 @@ for(int i=0;i<maxNlayer;i++)
 		htitle = Form("hit multiplicity (Chamber%d)",nch*2+1);
 		hchamberHitMul[nch] = new TH1D(hname,htitle,10,0,10);
 		hchamberHitMul[nch]->GetXaxis()->SetTitle("nRecHit");
-		tree->Project(hname, cutChamberHitMul);
+		if(cal_eff_from_tree_On) tree->Project(hname, cutChamberHitMul);
 
 		if(drawOn)
 		{
 			c1->cd();
 			hchamberHitMul[nch]->Draw();
-			TString png = Form("Tree/hit_multiplicity_of_chamber%d.png",nch*2+1);
+			png = Form(srcDir+"/png/hit_multiplicity_of_chamber%d.png",nch*2+1);
 			if(printOn) c1->Print(png);
 
 			int maxHitMul = 0;
@@ -276,62 +343,115 @@ for(int i=0;i<maxNlayer;i++)
 
 cout<<endl<<"maxVfatEff "<<maxVfatEff<<", minVfatEff "<<minVfatEff<<", maxVfatNumerator "<<maxVfatNumerator<<", minVfatNumerator "<<minVfatNumerator<<", maxVfatDenominator "<<maxVfatDenominator<<", minVfatDenominator "<<minVfatDenominator<<endl;
 
+/*
 for(int i=0;i<maxNlayer;i++) if(drawOn && calc_eff_vfat_On) 
 {
 	c2->cd();
 	hvfatEff2[i]->SetMaximum(maxVfatEff + (maxVfatEff-minVfatEff)*0.05);
 	hvfatEff2[i]->SetMinimum(minVfatEff - (maxVfatEff-minVfatEff)*0.05);
 	hvfatEff2[i]->Draw("colz");
-	TString png = Form("Tree/eff_VS_vfat_of_chamber%d_layer%d_fixRange_2D.png",(i/2)*2+1,i%2+1);
+	png = Form(srcDir+"/png/eff_VS_vfat_of_chamber%d_layer%d_fixRange_2D.png",(i/2)*2+1,i%2+1);
 	if(printOn) c2->Print(png);
 
 	hvfatNumerator[i]->SetMaximum(maxVfatNumerator + (maxVfatNumerator-minVfatNumerator)*0.05);
 	hvfatNumerator[i]->SetMinimum(minVfatNumerator - (maxVfatNumerator-minVfatNumerator)*0.05);
 	hvfatNumerator[i]->Draw("colz");
-	png = Form("Tree/eff_VS_vfat_of_chamber%d_layer%d_fixRange_Numerator.png",(i/2)*2+1,i%2+1);
+	png = Form(srcDir+"/png/eff_VS_vfat_of_chamber%d_layer%d_fixRange_Numerator.png",(i/2)*2+1,i%2+1);
 	if(printOn) c2->Print(png);
 	hvfatDenominator[i]->SetMaximum(maxVfatDenominator + (maxVfatDenominator-minVfatDenominator)*0.05);
 	hvfatDenominator[i]->SetMinimum(minVfatDenominator - (maxVfatDenominator-minVfatDenominator)*0.05);
 	hvfatDenominator[i]->Draw("colz");
-	png = Form("Tree/eff_VS_vfat_of_chamber%d_layer%d_fixRange_Denominator.png",(i/2)*2+1,i%2+1);
+	png = Form(srcDir+"/png/eff_VS_vfat_of_chamber%d_layer%d_fixRange_Denominator.png",(i/2)*2+1,i%2+1);
 	if(printOn) c2->Print(png);
 }
+*/
 
 if(drawOn) 
 {
 	c1->cd();
 	hlayerEff->Draw();
 //	hlayerEff->Fit("pol0");
-	TString png ="Tree/eff_VS_layer.png";
+	png =srcDir+"/png/eff_VS_layer.png";
 	if(printOn) c1->Print(png);
 	hchamberEff->Draw();
 //	hchamberEff->Fit("pol0");
-	png = "Tree/eff_VS_chamber.png";
+	png = srcDir+"/png/eff_VS_chamber.png";
 	if(printOn) c1->Print(png);
 
 	c2->cd();
 	hlayerI2->Draw("colz text");
-	png ="Tree/eff_VS_layer_2D_denominator.png";
+	png =srcDir+"/png/eff_VS_layer_2D_denominator.png";
 	if(printOn) c2->Print(png);
 	hlayerF2->Draw("colz text");
-	png ="Tree/eff_VS_layer_2D_numerator.png";
+	png =srcDir+"/png/eff_VS_layer_2D_numerator.png";
 	if(printOn) c2->Print(png);
 	hlayerEff2->Draw("colz text");
-	png ="Tree/eff_VS_layer_2D.png";
+	png =srcDir+"/png/eff_VS_layer_2D.png";
 	if(printOn) c2->Print(png);
 
 	hchamberI2->Draw("colz text");
-	png = "Tree/eff_VS_chamber_2D_denominator.png";
+	png = srcDir+"/png/eff_VS_chamber_2D_denominator.png";
 	if(printOn) c2->Print(png);
 	hchamberF2->Draw("colz text");
-	png = "Tree/eff_VS_chamber_2D_numerator.png";
+	png = srcDir+"/png/eff_VS_chamber_2D_numerator.png";
 	if(printOn) c2->Print(png);
 	hchamberEff2->Draw("colz text");
-	png = "Tree/eff_VS_chamber_2D.png";
+	png = srcDir+"/png/eff_VS_chamber_2D.png";
 	if(printOn) c2->Print(png);
 }
 
+TCanvas *c3 = new TCanvas("c3","c3",700,500);
+fEff->cd();
+tree->Draw("eff>>h1(40,0.9,1)");
+h1->SetTitle("number of vfats VS efficiency");
+h1->GetXaxis()->SetTitle("efficiency");
+h1->GetYaxis()->SetTitle("number of vfats");
+h1->Draw();
+tree->Draw("eff>>h2(40,0.9,1)","phi==0||phi==8");
+h2->SetLineColor(2);
+h1->Draw();
+h2->Draw("same");
+TLegend *leg = new TLegend(0.2,0.65,0.55,0.85);
+leg->AddEntry(h1,"all vfats","l");
+leg->AddEntry(h2,"vfats at the edge of QC8","l");
+leg->Draw();
+png = "temp/run"+run+Form("_number_of_vfats_VS_efficiency.png",i);
+c3->Print(png);
+//png = srcDir+"/png/eff_VS_chamber_2D.png";
+//c3->Print(png);
 
+TCanvas *c4 = new TCanvas("c4","c4",700,500);
+c4->SetRightMargin(0.15);
+for(int i=0;i<maxNlayer/3;i++)
+{
+	hname = Form("hvfatEff3_%d",i);
+	htitle = Form("Efficiency VS VFAT (floor%d)",i);
+	hvfatEff3[i] = new TH2D(hname,htitle,maxNphi*3,1,maxNphi*3+1,maxNeta,1,maxNeta+1);
+	hvfatEff3[i]->GetXaxis()->SetTitle("ith-#phi");
+	hvfatEff3[i]->GetYaxis()->SetTitle("ith-#eta");
+	hvfatEff3[i]->SetMaximum(maxVfatEff + (maxVfatEff-minVfatEff)*0.05);
+	hvfatEff3[i]->SetMinimum(minVfatEff - (maxVfatEff-minVfatEff)*0.05);
+	for(int j=0;j<maxNphi*3;j++)
+	{
+		for(int k=0;k<maxNeta;k++)
+		{
+			int n1 = (j/3)*10+i;
+			int n2 = j%3;
+			int n3 = k;
+			hvfatEff3[i]->SetBinContent(j+1,k+1, vfatEff[n1][n2][n3]);
+		}
+	}
+	hvfatEff3[i]->Draw("colz text");
+	png = "temp/run"+run+Form("_eff_VS_vfat_floor%d.png",i);
+	c4->Print(png);
+}
+
+if(makeTreeOn)
+{
+	fEff->cd();
+	tree->Write();
+	fEff->Close();
+}
 
 }
 
