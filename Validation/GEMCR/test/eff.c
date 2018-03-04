@@ -8,7 +8,7 @@ int setMinimumOn=1;
 int makeTreeOn=1;
 int cal_eff_from_tree_On=0;
 
-TString run = "112";
+TString run = "123";
 TString srcDir = "/afs/cern.ch/work/j/jslee/QC8";
 TString filename = "temp_out_reco_MC_"+run;
 //TString srcDir = "/tmp/jslee";
@@ -107,9 +107,9 @@ if(drawOn)
 	c2->SetRightMargin(0.15);
 }
 
-TString hname;
-TString htitle;
-TString png;
+TString hname="";
+TString htitle="";
+TString png="";
 //int i=0;
 //for(int i=18;i<20;i++)
 for(int i=0;i<maxNlayer;i++)
@@ -156,8 +156,8 @@ for(int i=0;i<maxNlayer;i++)
 		for(int k=0, k2=maxNeta;k<maxNeta;k++, k2--)
 		{
 			int n1 = k; //n1 = 0,1,2,3,4,5,6,7
-			int n2 = 2-j+(int)(2-i/10)*3; // n2 = 8 7 6 5 4 3 2 1 0
-			//int n2 = j+(int)(2-i/10)*3; // n2 = 6 7 8 3 4 5 0 1 2
+			//int n2 = 2-j+(int)(2-i/10)*3; // n2 = 8 7 6 5 4 3 2 1 0 for run106
+			int n2 = j+(int)(2-i/10)*3; // n2 = 6 7 8 3 4 5 0 1 2 for 107<=run<=124
 			int n3 = i%10; // n3 = 0,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9
 			//int vfatId = i*100 + j*10 + k;
 			TString cutI = Form("vfatI[%d][%d][%d]==1",i,j,k);
@@ -186,7 +186,7 @@ for(int i=0;i<maxNlayer;i++)
 //					layer = i;
 //					phi = j;
 //					eta = k;
-//					n2 = 2-j+(int)(2-i/10)*3;
+					n2 = 2-j+(int)(2-i/10)*3; //for 107<=run<=124
 					layer = n3;
 					phi = n2;
 					eta = n1;
@@ -407,23 +407,37 @@ h1->SetTitle("number of vfats VS efficiency");
 h1->GetXaxis()->SetTitle("efficiency");
 h1->GetYaxis()->SetTitle("number of vfats");
 h1->Draw();
-tree->Draw("eff>>h2(40,0.9,1)","phi==0||phi==8");
+png = "temp/run"+run+"_number_of_vfats_VS_efficiency02.png";
+c3->Print(png);
+tree->Draw("eff>>h2(40,0.9,1)","phi==2||phi==6"); //for run106 and 107<=run<=124
+//tree->Draw("eff>>h2(40,0.9,1)","phi==0||phi==8"); //for 107<=run<=124
 h2->SetLineColor(2);
 h1->Draw();
 h2->Draw("same");
-TLegend *leg = new TLegend(0.2,0.65,0.55,0.85);
+TLegend *leg = new TLegend(0.20,0.65,0.70,0.85);
 leg->AddEntry(h1,"all vfats","l");
-leg->AddEntry(h2,"vfats at the edge of QC8","l");
+//leg->AddEntry(h2,"vfats at the edge of QC8","l");
+leg->AddEntry(h2,"overlapped vfats under center chamber","l");
 leg->Draw();
-png = "temp/run"+run+Form("_number_of_vfats_VS_efficiency.png",i);
+png = "temp/run"+run+"_number_of_vfats_VS_efficiency01.png";
 c3->Print(png);
 //png = srcDir+"/png/eff_VS_chamber_2D.png";
 //c3->Print(png);
 
 TCanvas *c4 = new TCanvas("c4","c4",700,500);
 c4->SetRightMargin(0.15);
+//TCanvas *c5[2];
+TCanvas *c5 = new TCanvas("c5","c5",1442,437*2);
+c5->Divide(3,4,0,0);
+
 for(int i=0;i<maxNlayer/3;i++)
 {
+//	if(i%5==0)
+//	{
+		//c5[i/5] = new TCanvas(Form("c5_%d",i/5),Form("c5_%d",i/5),2100,1000);
+		//c5[i/5]->Divide(3,2,0,0);
+		// 2100/36.97cm=56.8028/cm, 1000/17.15cm=58.3090/cm ==> 25.4cm - 1442.79, 7.5cm - 437.318
+//	}
 	hname = Form("hvfatEff3_%d",i);
 	htitle = Form("Efficiency VS VFAT (floor%d)",i);
 	hvfatEff3[i] = new TH2D(hname,htitle,maxNphi*3,1,maxNphi*3+1,maxNeta,1,maxNeta+1);
@@ -441,10 +455,38 @@ for(int i=0;i<maxNlayer/3;i++)
 			hvfatEff3[i]->SetBinContent(j+1,k+1, vfatEff[n1][n2][n3]);
 		}
 	}
+	c4->cd();
 	hvfatEff3[i]->Draw("colz text");
 	png = "temp/run"+run+Form("_eff_VS_vfat_floor%d.png",i);
 	c4->Print(png);
+
+//	int n0 = 11-i;
+//	if(i>=5) n0--;
+//	c5->cd(n0)->SetRightMargin(0.15);
+//	hvfatEff3[i]->Draw("colz");
+
+//	c5[i/5]->cd(i%5+1)->SetRightMargin(0.15);
+//	c5[i/5]->cd(5-i%5)->SetRightMargin(0.15);
+//	hvfatEff3[i]->Draw("colz");
+//	if(i%5==4)
+//	{
+//		png = "temp/run"+run+Form("_eff_VS_vfat_all0%d.png",i/5+1);
+//		c5[i/5]->Print(png);
+//	}
 }
+gStyle->SetTitleFontSize(0.1);
+for(int i=0;i<maxNlayer/3;i++)
+{
+	int n0 = 11-i;
+	if(i>=5) n0--;
+	c5->cd(n0)->SetRightMargin(0.15);
+	htitle = Form("floor%d",i);
+	hvfatEff3[i]->SetTitle(htitle);
+	hvfatEff3[i]->Draw("colz");
+}
+c5->cd();
+png = "temp/run"+run+"_eff_VS_vfat_AllInOne.png";
+c5->Print(png);
 
 if(makeTreeOn)
 {

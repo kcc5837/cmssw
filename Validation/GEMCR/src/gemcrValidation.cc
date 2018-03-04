@@ -430,6 +430,14 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     floorHitZ[i] = 0;
   }
 
+  //if ( isMC )
+  //{
+  //  HepMC::GenParticle *genMuon2 = NULL;
+  //  edm::Handle<edm::HepMCProduct> genVtx2;
+  //  e.getByToken( this->InputTagToken_US, genVtx2);
+  //  genMuon2 = genVtx2->GetEvent()->barcode_to_particle(1);
+  //  cout<<"nev "<<nev<<", pt "<<genMuon2->momentum().perp()<<", theta "<<genMuon2->momentum().theta()<<", phi "<<genMuon2->momentum().phi()<<endl;
+  //}
   //nglobalRecHit = 0;
   //nTotTrajRecHit = 0;
 //  for(int i=0;i<maxNRecHit;i++)
@@ -881,12 +889,14 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
         gtrp.y(), 
         fXGenGP1z + ( genMuon->momentum().z() / genMuon->momentum().y() ) * ( gtrp.y() - fXGenGP1y ));
       gtrp = gtrpGEN;
-      Local3DPoint tlp = bpch.toLocal(gtrp);
+      //Local3DPoint tlp = bpch.toLocal(gtrp);
       if ( 10 <= c && c <= 19 )
       if ( c == 10 ) {fSeedP1x = gtrp.x(); fSeedP1y = gtrp.y(); fSeedP1z = gtrp.z();}
       if ( c == 19 ) {fSeedP2x = gtrp.x(); fSeedP2y = gtrp.y(); fSeedP2z = gtrp.z();}
       Global3DPoint gtrp2(trackPCA.x() + fTrackVelX * ( gtrp.y() - trackPCA.y() ), gtrp.y(), trackPCA.z() + fTrackVelZ * ( gtrp.y() - trackPCA.y() ));
+      //gtrp2 = tsosCurrent.freeTrajectoryState()->position();
       gtrp = gtrp2;
+      Local3DPoint tlp = bpch.toLocal(gtrp);
 
       if (!bpch.bounds().inside(tlp)){continue;}
       if (ch==tch){

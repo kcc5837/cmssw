@@ -1,7 +1,8 @@
 {
 
+TString run = "124";
 //TFile *f = new TFile("/afs/cern.ch/work/j/jslee/QC8/temp_out_reco_MC_102-103.root");
-TFile *f = new TFile("/afs/cern.ch/work/j/jslee/QC8/temp_out_reco_MC_106.root");
+TFile *f = new TFile("/afs/cern.ch/work/j/jslee/QC8/temp_out_reco_MC_"+run+".root");
 f->cd("gemcrValidation");
 
 cout<<"nev "<<hev->GetBinContent(1)<<endl;
@@ -9,6 +10,53 @@ cout<<"nev "<<hev->GetBinContent(1)<<endl;
 new TCanvas;
 //c1->SetRightMargin(0.15);
 
+
+tree->Draw("genHitX[9]:genHitZ[9]>>gi9(500,-70,90,500,-70,70)","vfatI[9]");
+tree->Draw("genHitX[19]:genHitZ[19]>>gi19(500,-70,90,500,-70,70)","vfatI[19]","same");
+tree->Draw("genHitX[29]:genHitZ[29]>>gi29(500,-70,90,500,-70,70)","vfatI[29]","same");
+c1->Print("temp/run"+run+"_HitXZ_9_19_29_genHitX_genHitZ_vfatI9_19_29.png");
+
+//tree->Draw("genMuTheta:genMuPhi","vfatI");
+//c1->Print("temp/run"+run+"_genMuTheta_genMuPhi_all_vfats.png");
+//double i920 = tree->GetEntries("vfatI[9][2][0]");
+//double f920 = tree->GetEntries("vfatF[9][2][0]");
+//cout<<f920/i920<<endl;
+/*
+tree->Draw("genHitY:genHitX:genHitZ","vfatI[9][0][0]");
+c1->Print("temp/run"+run+"_genHitY_genHitX_genHitZ_vfat900.png");
+tree->Draw("trajHitY:trajHitX:trajHitZ","vfatI[9][0][0]");
+c1->Print("temp/run"+run+"_trajHitY_trajHitX_trajHitZ_vfat900.png");
+tree->Draw("recHitY:recHitX:recHitZ","vfatF[9][0][0]");
+c1->Print("temp/run"+run+"_recHitY_recHitX_recHitZ_vfat900.png");
+*/
+/*
+tree->Draw("genHitY:genHitX:genHitZ","vfatI[9][0]&&!vfatF[9][0]");
+c1->Print("temp/run"+run+"_genHitY_genHitX_genHitZ_vfatI90_NOvfatF90.png");
+tree->Draw("trajHitY:trajHitX:trajHitZ","vfatI[9][0]&&!vfatF[9][0]");
+c1->Print("temp/run"+run+"_trajHitY_trajHitX_trajHitZ_vfatI90_NOvfatF90.png");
+*/
+/*
+tree->Draw("genHitY:genHitX:genHitZ","vfatI[9][0][0]&&!vfatF[9][0][0]");
+c1->Print("temp/run"+run+"_genHitY_genHitX_genHitZ_vfatI900_NOvfatF900.png");
+tree->Draw("trajHitY:trajHitX:trajHitZ","vfatI[9][0][0]&&!vfatF[9][0][0]");
+c1->Print("temp/run"+run+"_trajHitY_trajHitX_trajHitZ_vfatI900_NOvfatF900.png");
+*/
+/*
+tree->Draw("genHitY:genHitX:genHitZ","vfatI[9][2][0]");
+c1->Print("temp/run"+run+"_genHitY_genHitX_genHitZ_vfat920.png");
+tree->Draw("trajHitY:trajHitX:trajHitZ","vfatI[9][2][0]");
+c1->Print("temp/run"+run+"_trajHitY_trajHitX_trajHitZ_vfat920.png");
+tree->Draw("recHitY:recHitX:recHitZ","vfatF[9][2][0]");
+c1->Print("temp/run"+run+"_recHitY_recHitX_recHitZ_vfat920.png");
+*/
+/*
+tree->Draw("genHitY:genHitX:genHitZ","vfatI[0][0][0]");
+c1->Print("temp/run"+run+"_genHitY_genHitX_genHitZ_vfat000.png");
+tree->Draw("trajHitY:trajHitX:trajHitZ","vfatI[0][0][0]");
+c1->Print("temp/run"+run+"_trajHitY_trajHitX_trajHitZ_vfat000.png");
+tree->Draw("recHitY:recHitX:recHitZ","vfatF[0][0][0]");
+c1->Print("temp/run"+run+"_recHitY_recHitX_recHitZ_vfat000.png");
+*/
 /*
 double vfatI020 = tree->GetEntries("vfatI[0][2][0]");
 double vfatF020 = tree->GetEntries("vfatF[0][2][0]");
@@ -25,18 +73,18 @@ f000->Divide(f000,i000);
 f000->Draw("colz");
 */
 //1 rad = 57.2958 degree
-
+/*
 tree->Draw("trajPhi*57.2958>>i92(30,60,120)","vfatI[9][2]");
 tree->Draw("trajPhi*57.2958>>f92(30,60,120)","vfatF[9][2]");
-c1->Print("eff_VS_phi_chamber9_layer2_edge_denominator.png");
+c1->Print("temp/eff_VS_phi_chamber9_layer2_edge_denominator.png");
 f92->SetTitle("#phi of trajectory (edge vfats of chamber9 layer2)");
 f92->GetXaxis()->SetTitle("degree");
 i92->Sumw2();
 f92->Sumw2();
 f92->Divide(f92,i92,1,1,"b");
 f92->Draw();
-c1->Print("eff_VS_phi_chamber9_layer2.png");
-
+c1->Print("temp/eff_VS_phi_chamber9_layer2.png");
+*/
 /*
 tree->Draw("acos(sqrt(sin(trajTheta)*cos(trajPhi)*sin(trajTheta)*cos(trajPhi) + cos(trajPhi)*cos(trajPhi)))*57.2958>>i92(15,30,90)","vfatI[9][2]");
 tree->Draw("acos(sqrt(sin(trajTheta)*cos(trajPhi)*sin(trajTheta)*cos(trajPhi) + cos(trajPhi)*cos(trajPhi)))*57.2958>>f92(15,30,90)","vfatI[9][2]&&vfatF[9][2]");
@@ -68,6 +116,81 @@ f000->Draw();
 c1->Print("temp/eff_VS_alpha_degree.png");
 */
 /*
+tree->Draw("trajHitX[9][0][7]:trajHitZ[9][0][7]>>ti907(500,-64,-28,500,-38,-24)","vfatI[9][0][7]");
+c1->Print("temp/run"+run+"_HitXZ_907_trajHitX907_trajHitZ907_vfatI907.png");
+tree->Draw("trajHitX[9][0][7]:trajHitZ[9][0][7]>>tif907(500,-64,-28,500,-38,-24)","vfatI[9][0][7]&&!vfatF[9][0][7]");
+c1->Print("temp/run"+run+"_HitXZ_907_trajHitX907_trajHitZ907_vfatI907_NovfatF907.png");
+tree->Draw("genHitX[9][0][7]:genHitZ[9][0][7]>>gi907(500,-64,-28,500,-38,-24)","vfatI[9][0][7]");
+c1->Print("temp/run"+run+"_HitXZ_907_genHitX907_genHitZ907_vfatI907.png");
+tree->Draw("genHitX[9][0][7]:genHitZ[9][0][7]>>gif907(500,-64,-28,500,-38,-24)","vfatI[9][0][7]&&!vfatF[9][0][7]");
+c1->Print("temp/run"+run+"_HitXZ_907_genHitX907_genHitZ907_vfatI907_NovfatF907.png");
+tree->Draw("recHitX[9][0][7]:recHitZ[9][0][7]>>rf(500,-64,-28,500,-38,-24)","vfatF[9][0][7]");
+c1->Print("temp/run"+run+"_HitXZ_907_recHitX907_recHitZ907_vfatF907.png");
+*/
+/*
+tree->Draw("trajHitX[9][2][7]:trajHitZ[9][2][7]>>ti927(500,-65,-25,500,-22,-8)","vfatI[9][2][7]");
+c1->Print("temp/run"+run+"_HitXZ_927_trajHitX927_trajHitZ927_vfatI927.png");
+tree->Draw("trajHitX[9][2][7]:trajHitZ[9][2][7]>>tif927(500,-65,-25,500,-22,-8)","vfatI[9][2][7]&&!vfatF[9][2][7]");
+c1->Print("temp/run"+run+"_HitXZ_927_trajHitX927_trajHitZ927_vfatI927_NovfatF927.png");
+tree->Draw("genHitX[9][2][7]:genHitZ[9][2][7]>>gi927(500,-65,-25,500,-22,-8)","vfatI[9][2][7]");
+c1->Print("temp/run"+run+"_HitXZ_927_genHitX927_genHitZ927_vfatI927.png");
+tree->Draw("genHitX[9][2][7]:genHitZ[9][2][7]>>gif927(500,-65,-25,500,-22,-8)","vfatI[9][2][7]&&!vfatF[9][2][7]");
+c1->Print("temp/run"+run+"_HitXZ_927_genHitX927_genHitZ927_vfatI927_NovfatF927.png");
+tree->Draw("recHitX[9][2][7]:recHitZ[9][2][7]>>rf(500,-65,-25,500,-22,-8)","vfatF[9][2][7]");
+c1->Print("temp/run"+run+"_HitXZ_927_recHitX927_recHitZ927_vfatF927.png");
+
+tree->Draw("trajHitZ[9][2][7]:recHitZ[9][2][7]","vfatF[9][2][7]");
+c1->Print("run120_HitZZ_927_trajHitZ927_recHitZ927_vfatF927.png");
+tree->Draw("trajHitX[9][2][7]:recHitX[9][2][7]","vfatF[9][2][7]");
+c1->Print("run120_HitXX_927_trajHitZ927_recHitX927_vfatF927.png");
+tree->Draw("genHitZ[9][2][7]:recHitZ[9][2][7]","vfatF[9][2][7]");
+c1->Print("run120_HitZZ_927_genHitZ927_recHitZ927_vfatF927.png");
+tree->Draw("genHitX[9][2][7]:recHitX[9][2][7]","vfatF[9][2][7]");
+c1->Print("run120_HitXX_927_genHitZ927_recHitX927_vfatF927.png");
+tree->Draw("trajHitX[9][2][7]:genHitX[9][2][7]","vfatI[9][2][7]");
+c1->Print("run120_HitXX_927_trajHitZ927_genHitX927_vfatI927.png");
+tree->Draw("trajHitX[9][2][7]:genHitX[9][2][7]","vfatI[9][2][7]&&!vfatF[9][2][7]");
+c1->Print("run120_HitXX_927_trajHitZ927_genHitX927_vfatI927_NovfatF927.png");
+tree->Draw("trajHitZ[9][2][7]:genHitZ[9][2][7]","vfatI[9][2][7]");
+c1->Print("run120_HitZZ_927_trajHitZ927_genHitZ927_vfatI927.png");
+tree->Draw("trajHitZ[9][2][7]:genHitZ[9][2][7]","vfatI[9][2][7]&&!vfatF[9][2][7]");
+c1->Print("run120_HitZZ_927_trajHitZ927_genHitZ927_vfatI927_NovfatF927.png");
+*/
+/*
+tree->Draw("trajHitX[9][0][0]:trajHitZ[9][0][0]","vfatI[9][0][0]");
+c1->Print("run"+run+"_trajHitX_trajHitZ_vfatI900.png");
+tree->Draw("trajHitX[9][0][0]:trajHitZ[9][0][0]","vfatI[9][0][0]&&!vfatF[9][0][0]");
+c1->Print("run"+run+"_trajHitX_trajHitZ_vfatI900_NovfatF900.png");
+tree->Draw("genHitX[9][0][0]:genHitZ[9][0][0]","vfatI[9][0][0]");
+c1->Print("run"+run+"_genHitX900_genHitZ900_vfatI900.png");
+tree->Draw("genHitX[9][0][0]:genHitZ[9][0][0]","vfatI[9][0][0]&&!vfatF[9][0][0]");
+c1->Print("run"+run+"_genHitX900_genHitZ900_vfatI900_NovfatF900.png");
+*/
+/*
+tree->Draw("trajHitX[9][2][0]:trajHitZ[9][2][0]>>ti920(500,20,70,500,-40,-13)","vfatI[9][2][0]");
+c1->Print("temp/run"+run+"_HitXZ_920_trajHitX920_trajHitZ920_vfatI920.png");
+tree->Draw("trajHitX[9][2][0]:trajHitZ[9][2][0]>>tif920(500,20,70,500,-40,-13)","vfatI[9][2][0]&&!vfatF[9][2][0]");
+c1->Print("temp/run"+run+"_HitXZ_920_trajHitX920_trajHitZ920_vfatI920_NovfatF920.png");
+tree->Draw("genHitX[9][2][0]:genHitZ[9][2][0]>>gi920(500,20,70,500,-40,-13)","vfatI[9][2][0]");
+c1->Print("temp/run"+run+"_HitXZ_920_genHitX920_genHitZ920_vfatI920.png");
+tree->Draw("genHitX[9][2][0]:genHitZ[9][2][0]>>gif920(500,20,70,500,-40,-13)","vfatI[9][2][0]&&!vfatF[9][2][0]");
+c1->Print("temp/run"+run+"_HitXZ_920_genHitX920_genHitZ920_vfatI920_NovfatF920.png");
+tree->Draw("recHitX[9][2][0]:recHitZ[9][2][0]>>rf(500,20,70,500,-40,-13)","vfatF[9][2][0]");
+c1->Print("temp/run"+run+"_HitXZ_920_recHitX920_recHitZ920_vfatF920.png");
+tree->Draw("trajHitX[9][2][0]:trajHitZ[9][2][0]>>tif920(500,20,70,500,-40,-13)","vfatI[9][2][0]&&!vfatF[9][2][0]&&genHitX[9][2][0]>-19");
+c1->Print("temp/run"+run+"_HitXZ_920_trajHitX920_trajHitZ920_vfatI920_NovfatF920_genHitX920_gt_M19.png");
+*/
+/*
+tree->Draw("trajHitX[9][0][0]:trajHitZ[9][0][0]","vfatI[9][0][0]");
+c1->Print("run"+run+"_trajHitX_trajHitZ_vfatI900.png");
+tree->Draw("trajHitX[9][0][0]:trajHitZ[9][0][0]","vfatI[9][0][0]&&!vfatF[9][0][0]");
+c1->Print("run"+run+"_trajHitX_trajHitZ_vfatI900_NovfatF900.png");
+tree->Draw("genHitX[9][0][0]:genHitZ[9][0][0]","vfatI[9][0][0]");
+c1->Print("run"+run+"_genHitX900_genHitZ900_vfatI900.png");
+tree->Draw("genHitX[9][0][0]:genHitZ[9][0][0]","vfatI[9][0][0]&&!vfatF[9][0][0]");
+c1->Print("run"+run+"_genHitX900_genHitZ900_vfatI900_NovfatF900.png");
+*/
+/*
 new TCanvas;
 c1->SetRightMargin(0.15);
 tree->Draw("trajHitX[0][1][1]:trajHitZ[0][1][1]>>i1(200,0,60,200,-55,-20)","vfatI[0][1][1]","colz");
@@ -77,6 +200,7 @@ f1->Divide(f1,i1);
 f1->Draw("colz");
 c1->Print("eff_using_trajHit_inXZ_Ch1La1Vfat1.png")
 */
+//tree->Draw("recHitZ-genHitZ","vfatI"); //wrong
 /*
 new TCanvas;
 c1->SetRightMargin(0.15);

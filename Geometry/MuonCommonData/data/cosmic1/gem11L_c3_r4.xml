@@ -21,13 +21,13 @@
     <rParent name="gembox:GEMBox"/>
     <rChild name="gem11:GEMBox11L"/>
     <rRotation name="RotYTypeC" />
-    <Translation x="[dxChamber]-12*cm" y="4*[separation]" z="0*fm" />
+    <Translation x="[dxChamber]-12*cm+2*cm" y="4*[separation]" z="0*fm" />
   </PosPart>
   <PosPart copyNumber="28">
     <rParent name="gembox:GEMBox"/>
     <rChild name="gem11:GEMBox11L"/>
     <rRotation name="RotYTypeC" />
-    <Translation x="[dxChamber]-12*cm" y="4*[separation]+[dyChamber]" z="0*fm" />
+    <Translation x="[dxChamber]-12*cm+2*cm" y="4*[separation]+[dyChamber]" z="0*fm" />
   </PosPart>
   
 </PosPartSection>
