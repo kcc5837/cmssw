@@ -40,12 +40,13 @@ public:
   ~gemcrValidation();
   void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &) override;
   void analyze(const edm::Event& e, const edm::EventSetup&) override;
-  int findIndex(GEMDetId id_);
+  int findIndex(GEMDetId id_, bool bIsFindCopad);
   int findvfat(float x, float a, float b);
   const GEMGeometry* initGeometry(edm::EventSetup const & iSetup);
   double maxCLS, minCLS,maxRes, trackChi2, trackResY, trackResX, MulSigmaOnWindow;
+  std::vector<std::string> SuperChamType;
+  std::vector<double> vecChamType;
   bool makeTrack, isMC;
-
 private:
   const GEMGeometry* GEMGeometry_;
   std::vector<MonitorElement*> gem_chamber_x_y;
@@ -87,6 +88,7 @@ private:
 
 
   MonitorElement* gemcr_g;
+  MonitorElement* gemcrGen_g;
   MonitorElement* gemcrTr_g;
   MonitorElement* gemcrCf_g;
   MonitorElement* gemcrTrScint_g;
@@ -133,11 +135,12 @@ private:
   float CalcWindowWidthY(GPSeed *pVecSeed, GlobalPoint *pPCurr);
   //int CalcDiffGenRec(GPSeed *pVecSeed, GlobalPoint *pPCurr);
 
-
+  //created by Jongseok Lee
   TH1D *hev;
   TH3D *hvfatHit_numerator;
   TH3D *hvfatHit_denominator;
   TTree *tree;
+  TTree *genTree;
   int run;
   int lumi;
   int nev;
@@ -148,6 +151,12 @@ private:
   float genMuY;
   float genMuZ;
 
+  int nRecHit;
+
+  bool onlyOneBestTraj = true;
+
+  const static int maxnTraj = 30;
+  int nTraj;
   float trajTheta;
   float trajPhi;
   float trajX;
@@ -156,8 +165,10 @@ private:
   float trajPx;
   float trajPy;
   float trajPz;
+  int ntrajHit;
   const static int maxNlayer = 30;
   const static int maxNphi = 3;
+
   const static int maxNeta = 8;
   int vfatI[maxNlayer][maxNphi][maxNeta];
   int vfatF[maxNlayer][maxNphi][maxNeta];
@@ -170,29 +181,12 @@ private:
   float genHitX[maxNlayer][maxNphi][maxNeta];
   float genHitY[maxNlayer][maxNphi][maxNeta];
   float genHitZ[maxNlayer][maxNphi][maxNeta];
-  //float diffX[maxNlayer][maxNphi][maxNeta];
-  //float diffZ[maxNlayer][maxNphi][maxNeta];
-  //float diffXZ[maxNlayer][maxNphi][maxNeta];
+
   const static int maxNfloor = 10;
   float floorHitX[maxNfloor];
   float floorHitY[maxNfloor];
   float floorHitZ[maxNfloor];
-
-  //const static int maxNRecHit = 100;
-  //int nglobalRecHit;
-  //float globalRecHitTheta[maxNRecHit];
-  //float globalRecHitPhi[maxNRecHit];
-  //float globalRecHitX[maxNRecHit];
-  //float globalRecHitY[maxNRecHit];
-  //float globalRecHitZ[maxNRecHit];
-
-  //int nTotTrajRecHit;
-  //float trajRecHitTheta[maxNRecHit];
-  //float trajRecHitPhi[maxNRecHit];
-  //float trajRecHitX[maxNRecHit];
-  //float trajRecHitY[maxNRecHit];
-  //float trajRecHitZ[maxNRecHit];
-
+  //created by Jongseok Lee
 };
 
 #endif

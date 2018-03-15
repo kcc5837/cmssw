@@ -65,14 +65,26 @@ gemcrValidation::gemcrValidation(const edm::ParameterSet& cfg): GEMBaseValidatio
   trackResY = cfg.getParameter<double>("trackResY"); 
   trackResX = cfg.getParameter<double>("trackResX");
   MulSigmaOnWindow = cfg.getParameter<double>("MulSigmaOnWindow");
-  
+  SuperChamType = cfg.getParameter<vector<string>>("SuperChamberType");
+  vecChamType = cfg.getParameter<vector<double>>("SuperChamberSeedingLayers");
   edm::ParameterSet smootherPSet = cfg.getParameter<edm::ParameterSet>("MuonSmootherParameters");
   theSmoother = new CosmicMuonSmoother(smootherPSet, theService);
   theUpdator = new KFUpdator();
   time(&rawTime);
 
+  //created by Jongseok Lee ==>
   edm::Service<TFileService> fs;
   hev = fs->make<TH1D>("hev","EventSummary",3,1,3);
+
+  genTree = fs->make<TTree>("genTree", "gen info for QC8");
+  genTree->Branch("genMuPt",&genMuPt,"genMuPt/F");
+  genTree->Branch("genMuTheta",&genMuTheta,"genMuTheta/F");
+  genTree->Branch("genMuPhi",&genMuPhi,"genMuPhi/F");
+  genTree->Branch("genMuX",&genMuX,"genMuX/F");
+  genTree->Branch("genMuY",&genMuY,"genMuY/F");
+  genTree->Branch("genMuZ",&genMuZ,"genMuZ/F");
+  genTree->Branch("nTraj",&nTraj,"nTraj/I");
+
   hvfatHit_numerator = fs->make<TH3D>("hvfatHit_numerator","vfat hit (numerator of efficiency)",8,0,8,9,0,9,10,0,10);
   hvfatHit_denominator = fs->make<TH3D>("hvfatHit_denominator","vfat hit (denominator of efficienct)",8,0,8,9,0,9,10,0,10);
   tree = fs->make<TTree>("tree", "Tree for QC8");
@@ -87,6 +99,8 @@ gemcrValidation::gemcrValidation(const edm::ParameterSet& cfg): GEMBaseValidatio
   tree->Branch("genMuY",&genMuY,"genMuY/F");
   tree->Branch("genMuZ",&genMuZ,"genMuZ/F");
 
+  tree->Branch("nRecHit",&nRecHit,"nRecHit/I");
+
   tree->Branch("trajTheta",&trajTheta,"trajTheta/F");
   tree->Branch("trajPhi",&trajPhi,"trajPhi/F");
   tree->Branch("trajX",&trajX,"trajX/F");
@@ -95,6 +109,7 @@ gemcrValidation::gemcrValidation(const edm::ParameterSet& cfg): GEMBaseValidatio
   tree->Branch("trajPx",&trajPx,"trajPx/F");
   tree->Branch("trajPy",&trajPy,"trajPy/F");
   tree->Branch("trajPz",&trajPz,"trajPz/F");
+  tree->Branch("nTrajHit",&ntrajHit,"nTrajHit/I");
 
   tree->Branch("vfatI",vfatI,"vfatI[30][3][8]/I");
   tree->Branch("vfatF",vfatF,"vfatF[30][3][8]/I");
@@ -112,28 +127,7 @@ gemcrValidation::gemcrValidation(const edm::ParameterSet& cfg): GEMBaseValidatio
   tree->Branch("floorHitX",floorHitX,"floorHitX[10]/F");
   tree->Branch("floorHitY",floorHitY,"floorHitY[10]/F");
   tree->Branch("floorHitZ",floorHitZ,"floorHitZ[10]/F");
-
-  //tree->Branch("diffX",diffX,"diffX[30][3][8]/F"); //distance between trajHit and genHit per vfat
-  //tree->Branch("diffZ",diffZ,"diffZ[30][3][8]/F"); //distance between trajHit and genHit per vfat
-  //tree->Branch("diffXZ",diffXZ,"diffXZ[30][3][8]/F"); //distance between trajHit and genHit in XZ plane per vfat
-
-  //tree->Branch("nTotTrajRecHit",&nTotTrajRecHit,"nTotTrajRecHit/I"); //number of total recHit associated track per event
-  //tree->Branch("trajRecHitTheta",trajRecHitTheta,"trajRecHitTheta[nTotTrajRecHit]/F");
-  //tree->Branch("trajRecHitPhi",trajRecHitPhi,"trajRecHitPhi[nTotTrajRecHit]/F");
-
-  //tree->Branch("nglobalRecHit",&nglobalRecHit,"nglobalRecHit/I"); //number of total recHit per event
-  //tree->Branch("globalRecHitTheta",globalRecHitTheta,"globalRecHitTheta[nglobalRecHit]/F");
-  //tree->Branch("globalRecHitPhi",globalRecHitPhi,"globalRecHitPhi[nglobalRecHit]/F");
-  //tree->Branch("globalRecHitX",globalRecHitX,"globalRecHitX[nglobalRecHit]/F");
-  //tree->Branch("globalRecHitY",globalRecHitY,"globalRecHitY[nglobalRecHit]/F");
-  //tree->Branch("globalRecHitZ",globalRecHitZ,"globalRecHitZ[nglobalRecHit]/F");
-
-  //tree->Branch("nTotTrajRecHit",&nTotTrajRecHit,"nTotTrajRecHit/I"); //number of total recHit associated track per event
-  //tree->Branch("trajRecHitTheta",trajRecHitTheta,"trajRecHitTheta[nTotTrajRecHit]/F");
-  //tree->Branch("trajRecHitPhi",trajRecHitPhi,"trajRecHitPhi[nTotTrajRecHit]/F");
-  //tree->Branch("trajRecHitX",trajRecHitX,"trajRecHitX[nTotTrajRecHit]/F");
-  //tree->Branch("trajRecHitY",trajRecHitY,"trajRecHitY[nTotTrajRecHit]/F");
-  //tree->Branch("trajRecHitZ",trajRecHitZ,"trajRecHitZ[nTotTrajRecHit]/F");
+  //created by Jongseok Lee <==
 
   printf("End of gemcrValidation::gemcrValidation() at %s\n", asctime(localtime(&rawTime)));
 }
@@ -149,21 +143,24 @@ void gemcrValidation::bookHistograms(DQMStore::IBooker & ibooker, edm::Run const
   if ( GEMGeometry_ == nullptr) return ;  
 
   const std::vector<const GEMSuperChamber*>& superChambers_ = GEMGeometry_->superChambers();   
-  for (auto sch : superChambers_){
+  for (auto sch : superChambers_)
+  {
     int n_lay = sch->nChambers();
-    for (int l=0;l<n_lay;l++){
-    	gemChambers.push_back(*sch->chamber(l+1));
+    for (int l=0;l<n_lay;l++)
+    {
+   	  gemChambers.push_back(*sch->chamber(l+1));
     }
   }
   n_ch = gemChambers.size();
   
   ibooker.setCurrentFolder("MuonGEMRecHitsV/GEMRecHitsTask");
 
-  gemcr_g = ibooker.book3D("gemcr_g","GEMCR GLOBAL RECHITS", 260,-130,130,165,-82.5,82.5, 140,0,140);
-  gemcrTr_g = ibooker.book3D("gemcrTr_g","GEMCR GLOBAL RECHITS", 260,-130,130,30,-82.5,82.5, 140,0,140);
-  gemcrCf_g = ibooker.book3D("gemcrCf_g","GEMCR GLOBAL RECHITS CONFIRMED", 260,-130,130,30,-82.5,82.5, 140,0,140);
-  gemcrTrScint_g = ibooker.book3D("gemcrTrScint_g","GEMCR GLOBAL RECHITS", 260,-130,130,30,-82.5,82.5, 140,0,140);
-  gemcrCfScint_g = ibooker.book3D("gemcrCfScint_g","GEMCR GLOBAL RECHITS SCINTILLATED", 260,-130,130,30,-82.5,82.5, 140,0,140);
+  gemcr_g = ibooker.book3D("gemcr_g","GEMCR GLOBAL RECHITS", 200,-100,100,156,-61,95,167,-12,155);
+  gemcrGen_g = ibooker.book3D("gemcrGen_g","GEMCR GLOBAL GEN HITS", 200,-100,100,156,-61,95,167,-12,155);
+  gemcrTr_g = ibooker.book3D("gemcrTr_g","GEMCR GLOBAL RECHITS", 200,-100,100,156,-61,95,167,-12,155);
+  gemcrCf_g = ibooker.book3D("gemcrCf_g","GEMCR GLOBAL RECHITS CONFIRMED", 200,-100,100,156,-61,95,167,-12,155);
+  gemcrTrScint_g = ibooker.book3D("gemcrTrScint_g","GEMCR GLOBAL RECHITS", 200,-100,100,156,-61,95,167,-12,155);
+  gemcrCfScint_g = ibooker.book3D("gemcrCfScint_g","GEMCR GLOBAL RECHITS SCINTILLATED", 200,-100,100,156,-61,95,167,-12,155);
   gem_cls_tot = ibooker.book1D("cluster_size","Cluseter size",20,0,20);  
   gem_bx_tot = ibooker.book1D("bx", "BX" , 30, -15,15);
   tr_size = ibooker.book1D("tr_size", "track size",10,0,10);
@@ -175,10 +172,10 @@ void gemcrValidation::bookHistograms(DQMStore::IBooker & ibooker, edm::Run const
   trajectoryh->setBinLabel(4, "passed chi2");
   firedMul = ibooker.book1D("firedMul","fired chamber multiplicity",n_ch+1,0,n_ch+1);
   firedChamber = ibooker.book1D("firedChamber", "fired chamber",n_ch,0,n_ch);
-  scinUpperHit = ibooker.book3D("scinUpperHit","UPPER SCINTILLATOR GLOBAL", 260,-130,130,30,-82.5,82.5, 140,0,140);
-  scinLowerHit = ibooker.book3D("scinUpperHit","LOWER SCINTILLATOR GLOBAL", 260,-130,130,30,-82.5,82.5, 140,0,140);
-  scinUpperRecHit = ibooker.book3D("scinLowerRecHit","UPPER SCINTILLATOR GLOBAL RECHITS", 260,-130,130,30,-82.5,82.5, 140,0,140);
-  scinLowerRecHit = ibooker.book3D("scinLowerRecHit","LOWER SCINTILLATOR GLOBAL RECHITS", 260,-130,130,30,-82.5,82.5, 140,0,140);
+  scinUpperHit = ibooker.book3D("scinUpperHit","UPPER SCINTILLATOR GLOBAL", 200,-100,100,156,-61,95,167,-12,155);
+  scinLowerHit = ibooker.book3D("scinUpperHit","LOWER SCINTILLATOR GLOBAL", 200,-100,100,156,-61,95,167,-12,155);
+  scinUpperRecHit = ibooker.book3D("scinLowerRecHit","UPPER SCINTILLATOR GLOBAL RECHITS", 200,-100,100,156,-61,95,167,-12,155);
+  scinLowerRecHit = ibooker.book3D("scinLowerRecHit","LOWER SCINTILLATOR GLOBAL RECHITS", 200,-100,100,156,-61,95,167,-12,155);
   
   resXSim = ibooker.book1D("residualx_sim", " residual x (sim)",200,-3,3);
   resXByErrSim = ibooker.book1D("residualxbyeff_sim", " residual x / x_err (sim)",200,-10,10);
@@ -271,10 +268,10 @@ void gemcrValidation::bookHistograms(DQMStore::IBooker & ibooker, edm::Run const
   printf("End of gemcrValidation::bookHistograms() at %s\n", asctime(localtime(&rawTime)));
 }
 
-int gemcrValidation::findIndex(GEMDetId id_) {
+int gemcrValidation::findIndex(GEMDetId id_, bool bIsFindCopad = false) {
   int index=-1;
   for(int c =0;c<n_ch;c++){
-    if((gemChambers[c].id().chamber() == id_.chamber())&(gemChambers[c].id().layer() == id_.layer()) ){index = c;}
+    if((gemChambers[c].id().chamber() == id_.chamber())&&(bIsFindCopad ^ ( gemChambers[c].id().layer() == id_.layer() )) ){index = c;}
   }
   return index;
 }
@@ -318,7 +315,7 @@ int g_nNumMatched = 0;
 double g_dMinY = 100000.0, g_dMaxY = -10000000.0;
 
 gemcrValidation::~gemcrValidation() {
-  printf("\nres1 : %i\n", g_nEvt);
+  printf("res1 : %i\n", g_nEvt);
   printf("res2 : %i\n", g_nNumRecHit);
   printf("res3 : %i\n", g_nNumFiredCh);
   printf("res4 : %i\n", g_nNumFiredChValid);
@@ -378,11 +375,21 @@ int g_nNumTest = 0;
 void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup){
   g_nEvt++;
 
+  //created by Jongseok Lee ==>
   run = e.id().run();
   lumi = e.id().luminosityBlock();
   nev = e.id().event();
-  if(nev%1000==0) cout<<"nev "<<nev<<endl;
+  //if(nev%1000==0) cout<<"nev "<<nev<<endl;
   hev->Fill(1);
+
+  genMuPt = -10;
+  genMuTheta = -10;
+  genMuPhi = -10;
+  genMuX = 0;
+  genMuY = 0;
+  genMuZ = 0;
+
+  nTraj = 0;
 
   for(int i=0;i<maxNlayer;i++)
   {
@@ -401,19 +408,9 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
         genHitX[i][j][k] = 0;
         genHitY[i][j][k] = 0;
         genHitZ[i][j][k] = 0;
-        //diffX[i][j][k] = 0;
-        //diffZ[i][j][k] = 0;
-        //diffXZ[i][j][k] = -1;
       }
     }
   }
-  genMuPt = -10;
-  genMuTheta = -10;
-  genMuPhi = -10;
-  genMuX = 0;
-  genMuY = 0;
-  genMuZ = 0;
-
   trajTheta = -10;
   trajPhi = -10;
   trajX = 0;
@@ -422,6 +419,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   trajPx = 0;
   trajPy = 0;
   trajPz = 0;
+  ntrajHit = 0;
 
   for(int i=0;i<maxNfloor;i++)
   {
@@ -429,23 +427,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     floorHitY[i] = 0;
     floorHitZ[i] = 0;
   }
-
-  //if ( isMC )
-  //{
-  //  HepMC::GenParticle *genMuon2 = NULL;
-  //  edm::Handle<edm::HepMCProduct> genVtx2;
-  //  e.getByToken( this->InputTagToken_US, genVtx2);
-  //  genMuon2 = genVtx2->GetEvent()->barcode_to_particle(1);
-  //  cout<<"nev "<<nev<<", pt "<<genMuon2->momentum().perp()<<", theta "<<genMuon2->momentum().theta()<<", phi "<<genMuon2->momentum().phi()<<endl;
-  //}
-  //nglobalRecHit = 0;
-  //nTotTrajRecHit = 0;
-//  for(int i=0;i<maxNRecHit;i++)
-//  {
-//    globalRecHitTheta[i] = -10;
-//    globalRecHitPhi[i] = -10;
-//    globalRecHitZ[i] = -10;
-//  }
+  //created by Jongseok Lee <==
 
   theService->update(iSetup);
 
@@ -494,7 +476,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     Local3DPoint tlproll1(dXTest, 0.0, 0.0);
     
     printf("Interval between two strips : %lf\n", gemChambers[ 0 ].etaPartition(8)->centreOfStrip(1).x() - gemChambers[ 0 ].etaPartition(8)->centreOfStrip(0).x()); fflush(stdout);
-    
+        
     for ( int i = 1 ; i <= 8 ; i++ ) {
       const BoundPlane& bprollCurr = GEMGeometry_->idToDet(gemChambers[ 0 ].etaPartition(i)->id())->surface();
       printf("Roll area %i test : %s ; %lf, %lf, %i ; %lf\n", i, 
@@ -527,6 +509,22 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
         bprollCurr.position().z(), 
         bprollCurr.position().y());
     }
+    
+    for ( int i = -2500 ; i <= 2500 ; i++ ) {
+      Local3DPoint tltest1(i * 0.01, -9.69, 0);
+      Local3DPoint tltest2(i * 0.01,  9.69, 0);
+      printf("x test - %5.2f : %s (-), %s (+)\n", 0.01 * i, 
+        GEMGeometry_->idToDet(gemChambers[ 0 ].etaPartition(1)->id())->surface().bounds().inside(tltest1) ? "in " : "out", 
+        GEMGeometry_->idToDet(gemChambers[ 0 ].etaPartition(1)->id())->surface().bounds().inside(tltest2) ? "in " : "out");
+    }
+    
+    for ( int i = -2 ; i <= 50 ; i++ ) {
+      Local3DPoint tltestJump(0, -9.71 - 0.01 * i, 0);
+      Global3DPoint gptestJump = GEMGeometry_->idToDet(gemChambers[ 0 ].etaPartition(1)->id())->surface().toGlobal(tltestJump);
+      Local3DPoint tltestJump2 = GEMGeometry_->idToDet(gemChambers[ 0 ].etaPartition(2)->id())->surface().toLocal(gptestJump);
+      printf("jump test - %5.2f : %s\n", -9.71 - 0.01 * i, 
+        ( GEMGeometry_->idToDet(gemChambers[ 0 ].etaPartition(2)->id())->surface().bounds().inside(tltestJump2) ? "in " : "out" ));
+    }
   }
   
   TString strKeep("");
@@ -537,12 +535,16 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   int nNumCurrFiredCh = 0;
   HepMC::GenParticle *genMuon = NULL;
   
+  //created by Jongseok Lee ==>
   double gen_px = 0;
   double gen_py = 0;
   double gen_pz = 0;
   double gen_pt = 0;
   double gen_theta = 0;
   double gen_phi = 0;
+
+  nRecHit = gemRecHits->size();
+  //created by Jongseok Lee <==
 
   if ( isMC )
   {
@@ -559,13 +561,14 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     fXGenGP2x = fXGenGP1x + dUnitGen * genMuon->momentum().x();
     fXGenGP2y = fXGenGP1y + dUnitGen * genMuon->momentum().y();
     fXGenGP2z = fXGenGP1z + dUnitGen * genMuon->momentum().z();
-
+    
     Float_t fVecX, fVecZ;
     int arrnFired[ 32 ] = {0, };
     
     fVecX = genMuon->momentum().x() / genMuon->momentum().y();
     fVecZ = genMuon->momentum().z() / genMuon->momentum().y();
-    
+
+    //created by Jongseok Lee ==>
     gen_px = genMuon->momentum().x();
     gen_py = genMuon->momentum().y();
     gen_pz = genMuon->momentum().z();
@@ -575,14 +578,16 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
 
     genMuPt = gen_pt;
     genMuTheta = gen_theta;
-    genMuPhi = gen_phi;    
+    genMuPhi = gen_phi;
 
     genMuX = fXGenGP1x;
     genMuY = fXGenGP1y;
     genMuZ = fXGenGP1z;
+
     //https://brilliant.org/wiki/3d-coordinate-geometry-equation-of-a-line
     //3D line equation for genMuon (generated track) : (x - genMuX)/gen_px = (y - genMuY)/gen_py = (z - genMuZ)/gen_pz;
     //if y=y0 then x = genMuX + (y0-genMuY)*(gen_px/gen_py),  z = genMuZ + (y0-genMuY)*(gen_pz/gen_py)
+    //created by Jongseok Lee <==
 
     for ( GEMRecHitCollection::const_iterator recHit = gemRecHits->begin(); recHit != gemRecHits->end(); ++recHit )
     {
@@ -599,8 +604,6 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
       
       Float_t fXGenHitX = fXGenGP1x + fDiffY * fVecX;
       Float_t fXGenHitZ = fXGenGP1z + fDiffY * fVecZ;
-      //Float_t diffXZ = sqrt( (recHitGP.x()-fXGenHitX)*(recHitGP.x()-fXGenHitX) + (recHitGP.z()-fXGenHitZ)*(recHitGP.z()-fXGenHitZ) ) ;
-      //cout<<"nev "<<nev<<", fXGenHitX "<<fXGenHitX<<", fXGenHitZ "<<fXGenHitZ<<", diffXZ "<<diffXZ<<endl;
 
       strKeep += TString::Format("  recHit : %i, RECO : (%0.5f, %0.5f, %0.5f) <... GEN : (%0.5f, %0.5f, %0.5f)\n", nIdxCh + 1, recHitGP.x(), recHitGP.z(), recHitGP.y(), fXGenHitX, fXGenHitZ, recHitGP.y());
       
@@ -671,9 +674,6 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     rMul.push_back(0);
   }
   TString strListRecHit("");
-
-  //nglobalRecHit = gemRecHits->size();
-  int nhit = 0;
   for (GEMRecHitCollection::const_iterator recHit = gemRecHits->begin(); recHit != gemRecHits->end(); ++recHit){
 
     Float_t  rh_l_x = recHit->localPosition().x();
@@ -696,21 +696,12 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     Float_t     rh_g_X = recHitGP.x();
     Float_t     rh_g_Y = recHitGP.y();
     Float_t     rh_g_Z = recHitGP.z();
-
-    //globalRecHitTheta[nhit] = recHitGP.theta();
-    //globalRecHitPhi[nhit] = recHitGP.phi();
-    //globalRecHitX[nhit] = recHitGP.x();
-    //globalRecHitY[nhit] = recHitGP.y();
-    //globalRecHitZ[nhit] = recHitGP.z();
-    //cout<<"nev "<<nev<<", eta "<<recHitGP.eta()<<", theta "<<globalRecHitTheta[nhit]<<", phi "<<globalRecHitPhi[nhit]<<", z "<<globalRecHitZ[nhit]<<endl;
-    nhit++;
-
     int nVfat = 8*(findvfat(firstClusterStrip+clusterSize*0.5, 0, 128*3)-1) + (8-rh_roll);
     vMul[index][nVfat] += 1;
     gem_chamber_x_y[index]->Fill(rh_l_x, rh_roll);
     gem_chamber_cl_size[index]->Fill(clusterSize, nVfat);
     gem_chamber_bx[index]->Fill(bx,rh_roll);
-    gemcr_g->Fill(rh_g_X,rh_g_Z,rh_g_Y);
+    gemcr_g->Fill(-rh_g_X,rh_g_Z,rh_g_Y);
     gem_cls_tot->Fill(clusterSize);
     gem_bx_tot->Fill(bx);
     rh1_chamber->Fill(index);
@@ -727,6 +718,10 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
       sMul[index][0] +=1;
       gem_chamber_digi_CLS[index]->Fill(i,rh_roll);
     }
+    
+    float fPGenRecX = fXGenGP1x + ( rh_g_Y - fXGenGP1y ) * genMuon->momentum().x() / genMuon->momentum().y();
+    float fPGenRecZ = fXGenGP1z + ( rh_g_Y - fXGenGP1y ) * genMuon->momentum().z() / genMuon->momentum().y();
+    gemcrGen_g->Fill(-fPGenRecX, fPGenRecZ, rh_g_Y);
   }
   
   for ( int ich = 0 ; ich < n_ch ; ich++ ) {
@@ -766,14 +761,6 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   
   /// Tracking start
   
-  vector<double> chamSetEff = {0,0, 0,0, 0,0, 0,0, 0,0,
-                               97.0,97.0, 97.0,97.0, 97.0,97.0, 97.0,97.0, 97.0,97.0,
-                               0,0, 0,0, 0,0, 0,0, 0,0};
-  
-  vector<double> vecChamType = {1,3, 0,0, 0,0, 0,0, 4,2, 
-                                1,3, 0,0, 0,0, 0,0, 4,2, 
-                                1,3, 0,0, 0,0, 0,0, 4,2};
-  
   int fCha = 10;
   int lCha = 19;
   
@@ -791,7 +778,97 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   
   edm::Handle<std::vector<unsigned int>> seedTypes;
   e.getByToken( this->InputTagToken_TT, seedTypes);
-  
+
+  //created by Jongseok Lee ==>  
+  //ntraj = idxChTraj->size();
+  genTree->Fill();
+
+  const int maxNtraj = 30;
+  int Bidx[maxNtraj];
+  int Bivfat[maxNtraj];
+  int BimRoll[maxNtraj];
+
+  float BgenHitX[maxNtraj] = {0,};
+  float BgenHitY[maxNtraj] = {0,};
+  float BgenHitZ[maxNtraj] = {0,};
+  float BtrajHitX[maxNtraj] = {0,};
+  float BtrajHitY[maxNtraj] = {0,};
+  float BtrajHitZ[maxNtraj] = {0,};
+  float BrecHitX[maxNtraj] = {0,};
+  float BrecHitY[maxNtraj] = {0,};
+  float BrecHitZ[maxNtraj] = {0,};
+  float BfloorHitX[maxNtraj] = {0,};
+  float BfloorHitY[maxNtraj] = {0,};
+  float BfloorHitZ[maxNtraj] = {0,};
+
+  int bestTchIdx = -1;
+  MuonTransientTrackingRecHit::MuonRecHitContainer testRecHits;
+
+  const int MaxNSeed = 2;
+  int chSeedIdx[MaxNSeed] = {0,};
+
+  if(onlyOneBestTraj)
+  {
+    float bestNChi2 = 10000;
+
+    //int nTRAJHIT = 0;
+    for(int i=0;i<maxNtraj;i++)
+    {
+      Bidx[i] = -1;
+      Bivfat[i] = -1;
+      BimRoll[i] = -1;
+    }
+    
+    int ntch = 0;
+    //Finding a best trajectory per event
+    for (auto tch : gemChambers)
+    {
+      ntch += 1;
+      for (auto etaPart : tch.etaPartitions()){
+        GEMDetId etaPartID = etaPart->id();
+        GEMRecHitCollection::range range = gemRecHits->get(etaPartID);
+        for (GEMRecHitCollection::const_iterator rechit = range.first; rechit!=range.second; ++rechit){
+            const GeomDet* geomDet(etaPart);
+            if ((*rechit).clusterSize()<minCLS) continue;
+            if ((*rechit).clusterSize()>maxCLS) continue;
+            testRecHits.push_back(MuonTransientTrackingRecHit::specificBuild(geomDet,&*rechit));        
+        }
+      }
+
+      std::vector<int>::const_iterator it1 = idxChTraj->begin();
+      std::vector<Trajectory>::const_iterator it3 = trajGCM->begin();
+      
+      TrajectorySeed bestSeed;
+      Trajectory bestTraj;
+      
+      for ( ; it1 != idxChTraj->end() ; )
+      {
+        if ( *it1 == ntch )
+        {
+          bestTraj = *it3;
+          bestSeed = (*it3).seed();
+          break;
+        }
+        it1++;
+        it3++;
+      }
+      
+      if ( it1 == idxChTraj->end() ) continue;
+
+      float NormalizedChi2 = bestTraj.chiSquared()/float(bestTraj.ndof());
+      //cout<<"nev "<<nev<<", ntch "<<ntch-1<<", NormChi2 "<<NormalizedChi2<<endl;
+      if(fabs(bestNChi2-1) > fabs(NormalizedChi2-1)) 
+      {
+        bestNChi2 = NormalizedChi2;
+        bestTchIdx = ntch-1;
+      }
+    }
+    //cout<<"nev "<<nev<<", bestTchIdx "<<bestTchIdx<<endl;
+
+    if(bestTchIdx==-1) return;
+  }
+  //created by Jongseok Lee <==  
+
   if ( idxChTraj->size() == 0 ) return;
 
   if (!makeTrack) return; 
@@ -802,22 +879,30 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   if ( fChMul == 5 ) events_withtraj->Fill(1.5);
   if ( fChMul >= 6 ) events_withtraj->Fill(2.5);
 
-  for (auto tch : gemChambers)
+  //modified by Jongseok Lee ==>
+  //GEMChamber tch = gemChambers[bestTchIdx];
+  //countTC = bestTchIdx+1;
+  for (auto tch : gemChambers) if((onlyOneBestTraj&&countTC==bestTchIdx) || !onlyOneBestTraj)
   {
     countTC += 1;
-    MuonTransientTrackingRecHit::MuonRecHitContainer testRecHits;
-    if (isMC){if (tch.id().chamber()<9 and tch.id().chamber()>20) continue;}
-    for (auto etaPart : tch.etaPartitions()){
-      GEMDetId etaPartID = etaPart->id();
-      GEMRecHitCollection::range range = gemRecHits->get(etaPartID);
-      for (GEMRecHitCollection::const_iterator rechit = range.first; rechit!=range.second; ++rechit){
-          const GeomDet* geomDet(etaPart);
-          if ((*rechit).clusterSize()<minCLS) continue;
-          if ((*rechit).clusterSize()>maxCLS) continue;
-          testRecHits.push_back(MuonTransientTrackingRecHit::specificBuild(geomDet,&*rechit));        
+    if(!onlyOneBestTraj)
+    {
+      MuonTransientTrackingRecHit::MuonRecHitContainer testRecHits;
+      for (auto etaPart : tch.etaPartitions())
+      {
+        GEMDetId etaPartID = etaPart->id();
+        GEMRecHitCollection::range range = gemRecHits->get(etaPartID);
+        for (GEMRecHitCollection::const_iterator rechit = range.first; rechit!=range.second; ++rechit)
+        {
+            const GeomDet* geomDet(etaPart);
+            if ((*rechit).clusterSize()<minCLS) continue;
+            if ((*rechit).clusterSize()>maxCLS) continue;
+            testRecHits.push_back(MuonTransientTrackingRecHit::specificBuild(geomDet,&*rechit));        
+        }
       }
     }
-    
+    //modified by Jongseok Lee <==
+
     std::vector<int>::const_iterator it1 = idxChTraj->begin();
     std::vector<TrajectorySeed>::const_iterator it2 = seedGCM->begin();
     std::vector<Trajectory>::const_iterator it3 = trajGCM->begin();
@@ -847,7 +932,8 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
       it5++;
     }
     
-    if ( it1 == idxChTraj->end() ) continue;
+    if(!onlyOneBestTraj) if ( it1 == idxChTraj->end() ) continue;
+    //if ( it1 == idxChTraj->end() ) continue;
     
     const FreeTrajectoryState* ftsAtVtx = bestTraj.geometricalInnermostState().freeState();
     
@@ -856,17 +942,6 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     
     Float_t fTrackVelX = gvecTrack.x() / gvecTrack.y();
     Float_t fTrackVelZ = gvecTrack.z() / gvecTrack.y();
-
-    trajTheta = gvecTrack.theta();
-    trajPhi = gvecTrack.phi();
-    trajX = trackPCA.x();
-    trajY = trackPCA.y();
-    trajZ = trackPCA.z();
-    trajPx = gvecTrack.x();
-    trajPy = gvecTrack.y();
-    trajPz = gvecTrack.z();
-    //GlobalVector gvecTrack2(-trackPCA.x(), -trackPCA.y(), -trackPCA.z());
-    //cout<<"nev "<<nev<<", genMuTheta "<<genMuTheta<<", genMuPhi "<<genMuPhi<<", trajTheta "<<trajTheta<<", trajPhi "<<trajPhi<<", trajTheta2 "<<gvecTrack2.theta()<<", trajPhi2 "<<gvecTrack2.phi()<<endl;
     
     Float_t fSeedP1x = 0.0, fSeedP1y = 0.0, fSeedP1z = 0.0;
     Float_t fSeedP2x = 0.0, fSeedP2y = 0.0, fSeedP2z = 0.0;
@@ -877,8 +952,43 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     TrajectoryStateOnSurface tsos = trajectoryStateTransform::transientState(ptsd1,&bp,&*theService->magneticField());
     TrajectoryStateOnSurface tsosCurrent = tsos;
     
+    //created by Jongseok Lee ==>
+    int nch=0;
+    TrajectorySeed::range range = bestSeed.recHits();
+    for (OwnVector<TrackingRecHit>::const_iterator rechit = range.first; rechit!=range.second; ++rechit){
+      GEMDetId hitID(rechit->rawId());
+      chSeedIdx[nch] = hitID.chamber()+hitID.layer()-2;
+      //cout<<"nev "<<nev<<", chSeedIdx "<<chSeedIdx[nch]<<endl;
+      nch++;
+    }
+
+    nTraj++;
+    //float NormalizedChi2 = bestTraj.chiSquared()/float(bestTraj.ndof());
+    //if(fabs(bestNChi2-1) <= fabs(NormalizedChi2-1)) continue;
+    //bestNChi2 = NormalizedChi2;
+    trajTheta = gvecTrack.theta();
+    trajPhi = gvecTrack.phi();
+    trajX = trackPCA.x();
+    trajY = trackPCA.y();
+    trajZ = trackPCA.z();
+    trajPx = gvecTrack.x();
+    trajPy = gvecTrack.y();
+    trajPz = gvecTrack.z();
+    ntrajHit = 0;
+    //for(int i=0;i<maxNtraj;i++)
+    //{
+    //  Bidx[i] = -1;
+    //  Bivfat[i] = -1;
+    //  BimRoll[i] = -1;
+    //}
+//cout<<"nev "<<nev<<", nTraj "<<nTraj<<", Theta "<<trajTheta<<", Phi "<<trajPhi<<", X "<<trajX<<", Y "<<trajY<<", Z "<<trajZ<<", Px "<<trajPx<<", Py "<<trajPy<<", Pz "<<trajPz<<endl;
+//cout<<"nev "<<nev<<", nTraj "<<nTraj<<", Theta "<<trajTheta<<", Phi "<<trajPhi<<", X "<<trajX<<", Y "<<trajY<<", Z "<<trajZ<<", NormChi2 "<<NormalizedChi2<<endl;
+//cout<<"nev "<<nev<<", nTraj "<<nTraj<<", Theta "<<trajTheta<<", Phi "<<trajPhi<<", X "<<trajX<<", Y "<<trajY<<", Z "<<trajZ<<", NormChi2 "<<NormalizedChi2<<endl;
+    //created by Jongseok Lee <==
+
     int nTrajHit = 0, nTrajRecHit = 0, nTestHit = 0;
-    for(int c=0; c<n_ch;c++){
+    for(int c=0; c<n_ch;c++)
+    {
       GEMChamber ch = gemChambers[c];
       const BoundPlane& bpch = GEMGeometry_->idToDet(ch.id())->surface();
       tsosCurrent = theService->propagator("SteppingHelixPropagatorAny")->propagate(tsosCurrent, bpch);
@@ -888,18 +998,16 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
         fXGenGP1x + ( genMuon->momentum().x() / genMuon->momentum().y() ) * ( gtrp.y() - fXGenGP1y ), 
         gtrp.y(), 
         fXGenGP1z + ( genMuon->momentum().z() / genMuon->momentum().y() ) * ( gtrp.y() - fXGenGP1y ));
-      gtrp = gtrpGEN;
-      //Local3DPoint tlp = bpch.toLocal(gtrp);
-      if ( 10 <= c && c <= 19 )
+      Local3DPoint tlp = bpch.toLocal(gtrp);
       if ( c == 10 ) {fSeedP1x = gtrp.x(); fSeedP1y = gtrp.y(); fSeedP1z = gtrp.z();}
       if ( c == 19 ) {fSeedP2x = gtrp.x(); fSeedP2y = gtrp.y(); fSeedP2z = gtrp.z();}
       Global3DPoint gtrp2(trackPCA.x() + fTrackVelX * ( gtrp.y() - trackPCA.y() ), gtrp.y(), trackPCA.z() + fTrackVelZ * ( gtrp.y() - trackPCA.y() ));
-      //gtrp2 = tsosCurrent.freeTrajectoryState()->position();
-      gtrp = gtrp2;
-      Local3DPoint tlp = bpch.toLocal(gtrp);
-
       if (!bpch.bounds().inside(tlp)){continue;}
-      if (ch==tch){
+      // modified by Jongseok Lee ==>
+      //if (ch==tch)
+      if ((!onlyOneBestTraj&&ch==tch) || onlyOneBestTraj)
+      {
+      // modified by Jongseok Lee <==
         int n_roll = ch.nEtaPartitions();
         double minDely = 50.;
         int mRoll = -1;
@@ -909,7 +1017,6 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
           Local3DPoint rtlp = bproll.toLocal(gtrp);
           if(minDely > abs(rtlp.y())){minDely = abs(rtlp.y()); mRoll = r+1;}
         }
-
 
         if(1 == 0 && ( mRoll == 1 || mRoll == 8 )){
           bool tester = 1;
@@ -923,7 +1030,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
         if (mRoll == -1){cout << "no mRoll" << endl;continue;}
         
         if ( mRoll == 1 && ( countTC == 11 || countTC == 20 ) && 
-          ( unTypeSeed & QC8FLAG_SEEDINFO_REFVERTROLL18 ) != 0 )
+          ( unTypeSeed & QC8FLAG_SEEDINFO_MASK_REFVERTROLL18 ) != 0 )
         {
           projtheta_dist_edge_sim->Fill(180.0 / 3.141592 * atan2(genMuon->momentum().z(), genMuon->momentum().x()));
         }
@@ -931,59 +1038,108 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
         int n_strip = ch.etaPartition(mRoll)->nstrips();
         double min_x = ch.etaPartition(mRoll)->centreOfStrip(1).x();
         double max_x = ch.etaPartition(mRoll)->centreOfStrip(n_strip).x();
-        double min_x_cut = ch.etaPartition(mRoll)->centreOfStrip(1).x();
         
-        if ((tlp.x() > min_x_cut) & (tlp.x() < max_x))
+        if ( (tlp.x()>(min_x)) & (tlp.x() < (max_x)) )
         {
-          if ( ( ( vecChamType[ countTC - 1 ] == 2 || vecChamType[ countTC - 1 ] == 1 ) && 
-             ( mRoll == 1 || mRoll == 8 ) ) && 
-             ( unTypeSeed & QC8FLAG_SEEDINFO_REFVERTROLL18 ) == 0 ) continue;
+
+          // For testing the edge eta partition on the top and bottom layers only vertical seeds are allowed!
+          if ( ( vecChamType[ countTC - 1 ] == 2 || vecChamType[ countTC - 1 ] == 1 ) && 
+               ( mRoll == 1 || mRoll == 8 ) && 
+               ( unTypeSeed & QC8FLAG_SEEDINFO_MASK_REFVERTROLL18 ) == 0 ) continue;
+            
+          uint32_t topOrBottomEtaIs8 = (unTypeSeed & QC8FLAG_SEEDINFO_MASK_TOPBOTTOMETA8) >> QC8FLAG_SEEDINFO_SHIFT_TOPBOTTOMETA8;       
+
+          if (vecChamType[ countTC - 1 ] == 0 &&
+          	  SuperChamType[ int((countTC-1)/2) ] == "S" &&
+          	  topOrBottomEtaIs8 != 0)
+          {
+          	continue;
+          }
+          
+          uint32_t topAndBottomEtaIs7 = (unTypeSeed & QC8FLAG_SEEDINFO_MASK_TOPBOTTOMETA7) >> QC8FLAG_SEEDINFO_SHIFT_TOPBOTTOMETA7;
+          
+          if (vecChamType[ countTC - 1 ] == 0 &&
+          	  SuperChamType[ int((countTC-1)/2) ] == "S" &&
+          	  topAndBottomEtaIs7 != 0)
+          {
+          	continue;
+          }
+
+          uint32_t unDiffCol = ( unTypeSeed & QC8FLAG_SEEDINFO_MASK_DIFFCOL ) >> QC8FLAG_SEEDINFO_SHIFT_DIFFCOL;
+            
+          if ( ! ( (tlp.x()>(min_x + 1.5)) & (tlp.x() < (max_x - 1.5)) ) )
+          {
+            if ( unDiffCol == 1 ) 
+            {
+              continue;
+            }
+            else if ( ( vecChamType[ countTC - 1 ] == 2 || vecChamType[ countTC - 1 ] == 1 ) )
+            {
+              continue;
+            }
+          }
           
           gem_chamber_track[findIndex(ch.id())]->Fill(4.5);
           int index = findIndex(ch.id());
           double vfat = findvfat(tlp.x(), min_x, max_x);
 
+          //created by Jongseok Lee ==>
+
           int idx = index;
           int ivfat = (int)vfat - 1;
           int imRoll = mRoll - 1;
-          vfatI[idx][ivfat][imRoll]=1;
 
           int n1 = imRoll;
-          //int n2 = 2-ivfat + int(2-idx/10)*3;
-          int n2 = ivfat + int(2-idx/10)*3;
+          int n2 = 2-ivfat + int(2-idx/10)*3;
           int n3 = idx%10;
-          hvfatHit_denominator->Fill(n1,n2,n3);
 
-          //1 radian = 57.2958 degree
-          //angle between trajectory(3D vector) and XZ plane
-          //double angle = acos(sqrt(sin(trajTheta)*cos(trajPhi)*sin(trajTheta)*cos(trajPhi) + cos(trajPhi)*cos(trajPhi)))*57.2958;
-          //if((idx/10==0&&ivfat==2)||(idx/10==2&&ivfat==0))
-          //{
-            //cut for vfats at the edge of QC8
-            //if(angle>80) hvfatHit_denominator->Fill(n1,n2,n3);
-          //}
-          //else hvfatHit_denominator->Fill(n1,n2,n3);
-
-          //double genHitX = genMuX + (gtrp.y()-genMuY)*(gen_px/gen_py);
-          //double genHitZ = genMuZ + (gtrp.y()-genMuY)*(gen_pz/gen_py);
-          genHitX[idx][ivfat][imRoll] = genMuX + (gtrp.y()-genMuY)*(gen_px/gen_py);
-          genHitY[idx][ivfat][imRoll] = gtrp.y();
-          genHitZ[idx][ivfat][imRoll] = genMuZ + (gtrp.y()-genMuY)*(gen_pz/gen_py);
-          trajHitX[idx][ivfat][imRoll] = gtrp.x();
-          trajHitY[idx][ivfat][imRoll] = gtrp.y();
-          trajHitZ[idx][ivfat][imRoll] = gtrp.z();
-          //diffX[idx][ivfat][imRoll] = gtrp.x()-genHitX;
-          //diffZ[idx][ivfat][imRoll] = gtrp.z()-genHitZ;
-          //diffXZ[idx][ivfat][imRoll] = sqrt( pow(gtrp.x()-genHitX,2) + pow(gtrp.z()-genHitZ,2) );
-          int floor = idx%10;
-          floorHitX[floor] = gtrp.x();
-          floorHitY[floor] = gtrp.y();
-          floorHitZ[floor] = gtrp.z();
+          if(!onlyOneBestTraj)
+          {
+            vfatI[idx][ivfat][imRoll]=1;
+            vfatF[idx][ivfat][imRoll]=0;
+            hvfatHit_denominator->Fill(n1,n2,n3);
+          
+            genHitX[idx][ivfat][imRoll] = genMuX + (gtrp.y()-genMuY)*(gen_px/gen_py);
+            genHitY[idx][ivfat][imRoll] = gtrp.y();
+            genHitZ[idx][ivfat][imRoll] = genMuZ + (gtrp.y()-genMuY)*(gen_pz/gen_py);
+            trajHitX[idx][ivfat][imRoll] = gtrp.x();
+            trajHitY[idx][ivfat][imRoll] = gtrp.y();
+            trajHitZ[idx][ivfat][imRoll] = gtrp.z();
+            recHitX[idx][ivfat][imRoll] = 0;
+            recHitY[idx][ivfat][imRoll] = 0;
+            recHitZ[idx][ivfat][imRoll] = 0;
+          
+            int floor = idx%10;
+            floorHitX[floor] = gtrp.x();
+            floorHitY[floor] = gtrp.y();
+            floorHitZ[floor] = gtrp.z();
+          }
+          if(onlyOneBestTraj)
+          {
+            Bidx[ntrajHit] = index;
+            Bivfat[ntrajHit] = (int)vfat - 1;
+            BimRoll[ntrajHit] = mRoll - 1;
+            BgenHitX[ntrajHit] = genMuX + (gtrp.y()-genMuY)*(gen_px/gen_py);
+            BgenHitY[ntrajHit] = gtrp.y();
+            BgenHitZ[ntrajHit] = genMuZ + (gtrp.y()-genMuY)*(gen_pz/gen_py);
+            BtrajHitX[ntrajHit] = gtrp.x();
+            BtrajHitY[ntrajHit] = gtrp.y();
+            BtrajHitZ[ntrajHit] = gtrp.z();
+            BfloorHitX[ntrajHit] = gtrp.x();
+            BfloorHitY[ntrajHit] = gtrp.y();
+            BfloorHitZ[ntrajHit] = gtrp.z();
+            BrecHitX[ntrajHit] = 0;
+            BrecHitY[ntrajHit] = 0;
+            BrecHitZ[ntrajHit] = 0;
+            //nTRAJHIT++;
+          }
+          ntrajHit++;
+          //created by Jongseok Lee <==
 
           gem_chamber_th2D_eff[index]->Fill(vfat, mRoll);                
           gem_chamber_thxroll_eff[index]->Fill(tlp.x(), mRoll);
           gem_chamber_thxy_eff[index]->Fill(tlp.x(), gtrp.z());
-          gemcrTr_g->Fill(gtrp.x(), gtrp.z(), gtrp.y());
+          gemcrTr_g->Fill(-gtrp.x(), gtrp.z(), gtrp.y());
           g_nNumTrajHit++;
           if ( nNumCurrFiredCh == 6 ) g_nNumTrajHit6++;
           
@@ -997,7 +1153,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
             gem_chamber_th2D_eff_scint[index]->Fill(vfat, mRoll);                
             gem_chamber_thxroll_eff_scint[index]->Fill(tlp.x(), mRoll);
             gem_chamber_thxy_eff_scint[index]->Fill(tlp.x(), gtrp.z());
-            gemcrTrScint_g->Fill(gtrp.x(), gtrp.z(), gtrp.y());
+            gemcrTrScint_g->Fill(-gtrp.x(), gtrp.z(), gtrp.y());
           }
           
           double maxR = 99.9;
@@ -1010,6 +1166,8 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
             GlobalPoint hitGP = hit->globalPosition();
             if (abs(hitGP.x() - gtrp.x()) > maxRes) continue;
             if (abs(hitID.roll() - mRoll)>1) continue;
+            //double diffXZ = sqrt((hitGP.x() - gtrp.x())*(hitGP.x() - gtrp.x())+(hitGP.z() - gtrp.z())*(hitGP.z() - gtrp.z()));
+            //if(diffXZ>20) continue;
             double deltaR = (hitGP - gtrp).mag();
             if (maxR > deltaR)
             {
@@ -1025,33 +1183,27 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
             Local3DPoint hitLP = tmpRecHit->localPosition();
             Global3DPoint recHitGP = tmpRecHit->globalPosition();
             
-            gemcrCf_g->Fill(recHitGP.x(), recHitGP.z(), recHitGP.y());
-
-            nTrajRecHit++;
-            
-            //trajRecHitTheta[nTotTrajRecHit] = recHitGP.theta();
-            //trajRecHitPhi[nTotTrajRecHit] = recHitGP.phi();
-            //trajRecHitX[nTotTrajRecHit] = recHitGP.x();
-            //trajRecHitY[nTotTrajRecHit] = recHitGP.y();
-            //trajRecHitZ[nTotTrajRecHit] = recHitGP.z();
-            //nTotTrajRecHit++;
-            recHitX[idx][ivfat][imRoll] = recHitGP.x();
-            recHitY[idx][ivfat][imRoll] = recHitGP.y();
-            recHitZ[idx][ivfat][imRoll] = recHitGP.z();
-            //if(idx==0&&ivfat==0&&imRoll==0) cout<<"nev "<<nev<<", trajHitX "<<trajHitX[idx][ivfat][imRoll]<<", trajHitY "<<trajHitY[idx][ivfat][imRoll]<<", trajHitZ "<<trajHitZ[idx][ivfat][imRoll]<<", genHitX "<<genHitX[idx][ivfat][imRoll]<<", genHitY "<<genHitY[idx][ivfat][imRoll]<<", genHitZ "<<genHitZ[idx][ivfat][imRoll]<<", recHitX "<<recHitGP.x()<<", recHitY "<<recHitGP.y()<<", recHitZ "<<recHitGP.z()<<endl;
-
+            gemcrCf_g->Fill(-recHitGP.x(), recHitGP.z(), recHitGP.y());
           
-            vfatF[idx][ivfat][imRoll]=1;
+            nTrajRecHit++;
 
-            hvfatHit_numerator->Fill(n1,n2,n3);
-
-            //if((idx/10==0&&ivfat==2)||(idx/10==2&&ivfat==0))
-            //{
-              //cut for vfats at the edge of QC8
-              //if(angle>80) hvfatHit_numerator->Fill(n1,n2,n3);
-            //}
-            //else hvfatHit_numerator->Fill(n1,n2,n3);
-
+            //created by Jongseok Lee ==>
+            if(!onlyOneBestTraj)
+            {
+              recHitX[idx][ivfat][imRoll] = recHitGP.x();
+              recHitY[idx][ivfat][imRoll] = recHitGP.y();
+              recHitZ[idx][ivfat][imRoll] = recHitGP.z();
+              vfatF[idx][ivfat][imRoll]=1;
+              hvfatHit_numerator->Fill(n1,n2,n3);
+            }
+            if(onlyOneBestTraj)
+            {
+              BrecHitX[ntrajHit-1] = recHitGP.x();
+              BrecHitY[ntrajHit-1] = recHitGP.y();
+              BrecHitZ[ntrajHit-1] = recHitGP.z();
+            }
+            //created by Jongseok Lee <==
+            
             gem_chamber_tr2D_eff[index]->Fill(vfat, mRoll);
             gem_chamber_trxroll_eff[index]->Fill(tlp.x(), mRoll);
             gem_chamber_trxy_eff[index]->Fill(tlp.x(), gtrp.z());
@@ -1061,7 +1213,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
             
             if ( bIsScint )
             {
-              gemcrCfScint_g->Fill(recHitGP.x(), recHitGP.z(), recHitGP.y());
+              gemcrCfScint_g->Fill(-recHitGP.x(), recHitGP.z(), recHitGP.y());
               gem_chamber_tr2D_eff_scint[index]->Fill(vfat, mRoll);
               gem_chamber_trxroll_eff_scint[index]->Fill(tlp.x(), mRoll);
               gem_chamber_trxy_eff_scint[index]->Fill(tlp.x(), gtrp.z());
@@ -1074,7 +1226,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
             
           } else {
             
-            if ( countTC == 11 && mRoll == 1 && vfat == 1 ) {
+            if ( countTC == 17 && mRoll == 6 && vfat == 1 ) {
               Float_t fVecX, fVecZ;
               double dUnitGen = 0.1;
               
@@ -1089,11 +1241,12 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
               Float_t fXGenHitX = fXGenGP1x + fDiffY * fVecX;
               Float_t fXGenHitZ = fXGenGP1z + fDiffY * fVecZ;
               
-              printf("19_2_roll1_VFAT1 : event no. = %i ; # = %i\n", g_nEvt, (int)testRecHits.size());
+              printf("17_2_roll6_VFAT1 : event no. = %i ; # = %i\n", g_nEvt, (int)testRecHits.size());
               printf("GEN velocity : (%lf, %lf, 1.0)\n", fVecX, fVecZ);
               printf(strKeep.Data());
               
-              printf("reco trj hit : GEN (%lf, %lf, %lf) vs RECO_TRAJ (%lf, %lf, %lf)\n",fXGenHitX, fXGenHitZ, gtrp.y(), gtrp.x(), gtrp.z(), gtrp.y());
+              printf("reco trj hit : GEN (%lf, %lf, %lf) vs RECO_TRAJ (%lf, %lf, %lf)\n", 
+                fXGenHitX, fXGenHitZ, gtrp.y(), gtrp.x(), gtrp.z(), gtrp.y());
               
               for (GEMRecHitCollection::const_iterator hit = gemRecHits->begin(); hit != gemRecHits->end(); ++hit)
               {
@@ -1110,7 +1263,14 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
         continue;
       }
     }
-
+//cout<<"nev "<<nev<<", nTraj "<<nTraj<<", Theta "<<trajTheta<<", Phi "<<trajPhi<<", X "<<trajX<<", Y "<<trajY<<", Z "<<trajZ<<", NormChi2 "<<NormalizedChi2<<", nTRAJHIT "<<nTRAJHIT<<", nTrajHit "<<nTrajHit<<", nTrajRecHit "<<nTrajRecHit<<", eff "<<double(nTrajRecHit)/nTrajHit;
+//if(nTrajHit>0) 
+//{
+//  cout<<", vfatID ";
+//  for(int nth=0;nth<nTrajHit;nth++) cout<<Bidx[nth]<<" "<<Bivfat[nth]<<" "<<BimRoll[nth]<<", ";
+//}
+//cout<<endl;
+    
     if ( 11 <= countTC && countTC <= 20 )
     {
       Float_t fSeedDiffY = fSeedP2y - fSeedP1y;
@@ -1143,13 +1303,48 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   
   g_nNumTest++;
 
+  //created by Jongseok Lee ==>
+  //cout<<"nev "<<nev<<", nTraj "<<nTraj<<endl;
+
+  if(onlyOneBestTraj)
+  {
+    for(int i=0;i<ntrajHit;i++)
+    {
+      if(Bidx[i]!=-1 && Bivfat[i]!=-1 && BimRoll[i]!=-1 && Bidx[i]!=chSeedIdx[0] && Bidx[i]!=chSeedIdx[1])
+      {
+        int n1 = BimRoll[i];
+        int n2 = 2-Bivfat[i] + int(2-Bidx[i]/10)*3;
+        int n3 = Bidx[i]%10;
+        hvfatHit_denominator->Fill(n1,n2,n3);
+        vfatI[Bidx[i]][Bivfat[i]][BimRoll[i]] = 1;
+        if(BrecHitX[i]!=0 && BrecHitY[i]!=0 && BrecHitZ[i]!=0)
+        {
+          hvfatHit_numerator->Fill(n1,n2,n3);
+          vfatF[Bidx[i]][Bivfat[i]][BimRoll[i]] = 1;
+        }
+        genHitX[Bidx[i]][Bivfat[i]][BimRoll[i]] = BgenHitX[i];
+        genHitY[Bidx[i]][Bivfat[i]][BimRoll[i]] = BgenHitY[i];
+        genHitZ[Bidx[i]][Bivfat[i]][BimRoll[i]] = BgenHitZ[i];
+        trajHitX[Bidx[i]][Bivfat[i]][BimRoll[i]] = BtrajHitX[i];
+        trajHitY[Bidx[i]][Bivfat[i]][BimRoll[i]] = BtrajHitY[i];
+        trajHitZ[Bidx[i]][Bivfat[i]][BimRoll[i]] = BtrajHitZ[i];
+        floorHitX[Bidx[i]%10] = BfloorHitX[i];
+        floorHitY[Bidx[i]%10] = BfloorHitY[i];
+        floorHitZ[Bidx[i]%10] = BfloorHitZ[i];
+        recHitX[Bidx[i]][Bivfat[i]][BimRoll[i]] = BrecHitX[i];
+        recHitY[Bidx[i]][Bivfat[i]][BimRoll[i]] = BrecHitY[i];
+        recHitZ[Bidx[i]][Bivfat[i]][BimRoll[i]] = BrecHitZ[i];
+      }
+    }
+  }
+
   tree->Fill();
-
   hev->Fill(2);
-}
+  //if(ntrajHit>=2) 
+  //{
+  //  tree->Fill();
+  //  hev->Fill(2);
+  //}
+  //created by Jongseok Lee <==
 
-//void gemcrValidation::endJob() {
-//  cout<<"End"<<endl;
-//  outRoot = new TFile(outFile,"RECREATE");
-//  tree->Write();
-//}
+}
