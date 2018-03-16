@@ -110,6 +110,7 @@ gemcrValidation::gemcrValidation(const edm::ParameterSet& cfg): GEMBaseValidatio
   tree->Branch("trajPy",&trajPy,"trajPy/F");
   tree->Branch("trajPz",&trajPz,"trajPz/F");
   tree->Branch("nTrajHit",&ntrajHit,"nTrajHit/I");
+  tree->Branch("nTrajRecHit",&ntrajRecHit,"nTrajRecHit/I");
 
   tree->Branch("vfatI",vfatI,"vfatI[30][3][8]/I");
   tree->Branch("vfatF",vfatF,"vfatF[30][3][8]/I");
@@ -420,6 +421,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   trajPy = 0;
   trajPz = 0;
   ntrajHit = 0;
+  ntrajRecHit = 0;
 
   for(int i=0;i<maxNfloor;i++)
   {
@@ -802,16 +804,17 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   float BfloorHitZ[maxNtraj] = {0,};
 
   int bestTchIdx = -1;
-  MuonTransientTrackingRecHit::MuonRecHitContainer testRecHits;
+  MuonTransientTrackingRecHit::MuonRecHitContainer testRecHitsAll;
 
   const int MaxNSeed = 2;
   int chSeedIdx[MaxNSeed] = {0,};
+
+  //int nTRAJHIT = 0;
 
   if(onlyOneBestTraj)
   {
     float bestNChi2 = 10000;
 
-    //int nTRAJHIT = 0;
     for(int i=0;i<maxNtraj;i++)
     {
       Bidx[i] = -1;
@@ -820,7 +823,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     }
     
     int ntch = 0;
-    //Finding a best trajectory per event
+    //Selecting only one best trajectory per event
     for (auto tch : gemChambers)
     {
       ntch += 1;
@@ -831,7 +834,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
             const GeomDet* geomDet(etaPart);
             if ((*rechit).clusterSize()<minCLS) continue;
             if ((*rechit).clusterSize()>maxCLS) continue;
-            testRecHits.push_back(MuonTransientTrackingRecHit::specificBuild(geomDet,&*rechit));        
+            testRecHitsAll.push_back(MuonTransientTrackingRecHit::specificBuild(geomDet,&*rechit));        
         }
       }
 
@@ -879,29 +882,30 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   if ( fChMul == 5 ) events_withtraj->Fill(1.5);
   if ( fChMul >= 6 ) events_withtraj->Fill(2.5);
 
-  //modified by Jongseok Lee ==>
   //GEMChamber tch = gemChambers[bestTchIdx];
-  //countTC = bestTchIdx+1;
-  for (auto tch : gemChambers) if((onlyOneBestTraj&&countTC==bestTchIdx) || !onlyOneBestTraj)
+  //countTC = bestTchIdx;
+  for (auto tch : gemChambers)
   {
     countTC += 1;
-    if(!onlyOneBestTraj)
+    //created by Jongseok Lee ==>
+    if(onlyOneBestTraj&&countTC!=bestTchIdx+1) continue;
+    //created by Jongseok Lee <==
+    MuonTransientTrackingRecHit::MuonRecHitContainer testRecHits;
+    for (auto etaPart : tch.etaPartitions())
     {
-      MuonTransientTrackingRecHit::MuonRecHitContainer testRecHits;
-      for (auto etaPart : tch.etaPartitions())
+      GEMDetId etaPartID = etaPart->id();
+      GEMRecHitCollection::range range = gemRecHits->get(etaPartID);
+      for (GEMRecHitCollection::const_iterator rechit = range.first; rechit!=range.second; ++rechit)
       {
-        GEMDetId etaPartID = etaPart->id();
-        GEMRecHitCollection::range range = gemRecHits->get(etaPartID);
-        for (GEMRecHitCollection::const_iterator rechit = range.first; rechit!=range.second; ++rechit)
-        {
-            const GeomDet* geomDet(etaPart);
-            if ((*rechit).clusterSize()<minCLS) continue;
-            if ((*rechit).clusterSize()>maxCLS) continue;
-            testRecHits.push_back(MuonTransientTrackingRecHit::specificBuild(geomDet,&*rechit));        
-        }
+          const GeomDet* geomDet(etaPart);
+          if ((*rechit).clusterSize()<minCLS) continue;
+          if ((*rechit).clusterSize()>maxCLS) continue;
+          testRecHits.push_back(MuonTransientTrackingRecHit::specificBuild(geomDet,&*rechit));        
       }
     }
-    //modified by Jongseok Lee <==
+    //created by Jongseok Lee ==>
+    if(onlyOneBestTraj) testRecHits = testRecHitsAll;
+    //created by Jongseok Lee <==
 
     std::vector<int>::const_iterator it1 = idxChTraj->begin();
     std::vector<TrajectorySeed>::const_iterator it2 = seedGCM->begin();
@@ -932,8 +936,12 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
       it5++;
     }
     
-    if(!onlyOneBestTraj) if ( it1 == idxChTraj->end() ) continue;
-    //if ( it1 == idxChTraj->end() ) continue;
+    //if ( it1 == idxChTraj->end() ) 
+    //{
+    //  if(!onlyOneBestTraj) continue;
+    //  if(onlyOneBestTraj) return;
+    //}
+    if ( it1 == idxChTraj->end() ) continue;
     
     const FreeTrajectoryState* ftsAtVtx = bestTraj.geometricalInnermostState().freeState();
     
@@ -974,16 +982,10 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     trajPx = gvecTrack.x();
     trajPy = gvecTrack.y();
     trajPz = gvecTrack.z();
-    ntrajHit = 0;
-    //for(int i=0;i<maxNtraj;i++)
-    //{
-    //  Bidx[i] = -1;
-    //  Bivfat[i] = -1;
-    //  BimRoll[i] = -1;
-    //}
+    //ntrajHit = 0;
 //cout<<"nev "<<nev<<", nTraj "<<nTraj<<", Theta "<<trajTheta<<", Phi "<<trajPhi<<", X "<<trajX<<", Y "<<trajY<<", Z "<<trajZ<<", Px "<<trajPx<<", Py "<<trajPy<<", Pz "<<trajPz<<endl;
 //cout<<"nev "<<nev<<", nTraj "<<nTraj<<", Theta "<<trajTheta<<", Phi "<<trajPhi<<", X "<<trajX<<", Y "<<trajY<<", Z "<<trajZ<<", NormChi2 "<<NormalizedChi2<<endl;
-//cout<<"nev "<<nev<<", nTraj "<<nTraj<<", Theta "<<trajTheta<<", Phi "<<trajPhi<<", X "<<trajX<<", Y "<<trajY<<", Z "<<trajZ<<", NormChi2 "<<NormalizedChi2<<endl;
+//cout<<"nev "<<nev<<", nTraj "<<nTraj<<", Theta "<<trajTheta<<", Phi "<<trajPhi<<", X "<<trajX<<", Y "<<trajY<<", Z "<<trajZ<<", NormChi2 "<<bestTraj.chiSquared()/float(bestTraj.ndof())<<endl;
     //created by Jongseok Lee <==
 
     int nTrajHit = 0, nTrajRecHit = 0, nTestHit = 0;
@@ -1006,8 +1008,8 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
       // modified by Jongseok Lee ==>
       //if (ch==tch)
       if ((!onlyOneBestTraj&&ch==tch) || onlyOneBestTraj)
-      {
       // modified by Jongseok Lee <==
+      {
         int n_roll = ch.nEtaPartitions();
         double minDely = 50.;
         int mRoll = -1;
@@ -1084,55 +1086,22 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
           double vfat = findvfat(tlp.x(), min_x, max_x);
 
           //created by Jongseok Lee ==>
-
-          int idx = index;
-          int ivfat = (int)vfat - 1;
-          int imRoll = mRoll - 1;
-
-          int n1 = imRoll;
-          int n2 = 2-ivfat + int(2-idx/10)*3;
-          int n3 = idx%10;
-
-          if(!onlyOneBestTraj)
-          {
-            vfatI[idx][ivfat][imRoll]=1;
-            vfatF[idx][ivfat][imRoll]=0;
-            hvfatHit_denominator->Fill(n1,n2,n3);
-          
-            genHitX[idx][ivfat][imRoll] = genMuX + (gtrp.y()-genMuY)*(gen_px/gen_py);
-            genHitY[idx][ivfat][imRoll] = gtrp.y();
-            genHitZ[idx][ivfat][imRoll] = genMuZ + (gtrp.y()-genMuY)*(gen_pz/gen_py);
-            trajHitX[idx][ivfat][imRoll] = gtrp.x();
-            trajHitY[idx][ivfat][imRoll] = gtrp.y();
-            trajHitZ[idx][ivfat][imRoll] = gtrp.z();
-            recHitX[idx][ivfat][imRoll] = 0;
-            recHitY[idx][ivfat][imRoll] = 0;
-            recHitZ[idx][ivfat][imRoll] = 0;
-          
-            int floor = idx%10;
-            floorHitX[floor] = gtrp.x();
-            floorHitY[floor] = gtrp.y();
-            floorHitZ[floor] = gtrp.z();
-          }
-          if(onlyOneBestTraj)
-          {
-            Bidx[ntrajHit] = index;
-            Bivfat[ntrajHit] = (int)vfat - 1;
-            BimRoll[ntrajHit] = mRoll - 1;
-            BgenHitX[ntrajHit] = genMuX + (gtrp.y()-genMuY)*(gen_px/gen_py);
-            BgenHitY[ntrajHit] = gtrp.y();
-            BgenHitZ[ntrajHit] = genMuZ + (gtrp.y()-genMuY)*(gen_pz/gen_py);
-            BtrajHitX[ntrajHit] = gtrp.x();
-            BtrajHitY[ntrajHit] = gtrp.y();
-            BtrajHitZ[ntrajHit] = gtrp.z();
-            BfloorHitX[ntrajHit] = gtrp.x();
-            BfloorHitY[ntrajHit] = gtrp.y();
-            BfloorHitZ[ntrajHit] = gtrp.z();
-            BrecHitX[ntrajHit] = 0;
-            BrecHitY[ntrajHit] = 0;
-            BrecHitZ[ntrajHit] = 0;
-            //nTRAJHIT++;
-          }
+          Bidx[ntrajHit] = index;
+          Bivfat[ntrajHit] = (int)vfat - 1; //ith-phi
+          BimRoll[ntrajHit] = mRoll - 1;    //ith-eta
+          BgenHitX[ntrajHit] = genMuX + (gtrp.y()-genMuY)*(gen_px/gen_py);
+          BgenHitY[ntrajHit] = gtrp.y();
+          BgenHitZ[ntrajHit] = genMuZ + (gtrp.y()-genMuY)*(gen_pz/gen_py);
+          BtrajHitX[ntrajHit] = gtrp.x();
+          BtrajHitY[ntrajHit] = gtrp.y();
+          BtrajHitZ[ntrajHit] = gtrp.z();
+          BfloorHitX[ntrajHit] = gtrp.x();
+          BfloorHitY[ntrajHit] = gtrp.y();
+          BfloorHitZ[ntrajHit] = gtrp.z();
+          BrecHitX[ntrajHit] = 0;
+          BrecHitY[ntrajHit] = 0;
+          BrecHitZ[ntrajHit] = 0;
+          //nTRAJHIT++;
           ntrajHit++;
           //created by Jongseok Lee <==
 
@@ -1188,20 +1157,10 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
             nTrajRecHit++;
 
             //created by Jongseok Lee ==>
-            if(!onlyOneBestTraj)
-            {
-              recHitX[idx][ivfat][imRoll] = recHitGP.x();
-              recHitY[idx][ivfat][imRoll] = recHitGP.y();
-              recHitZ[idx][ivfat][imRoll] = recHitGP.z();
-              vfatF[idx][ivfat][imRoll]=1;
-              hvfatHit_numerator->Fill(n1,n2,n3);
-            }
-            if(onlyOneBestTraj)
-            {
-              BrecHitX[ntrajHit-1] = recHitGP.x();
-              BrecHitY[ntrajHit-1] = recHitGP.y();
-              BrecHitZ[ntrajHit-1] = recHitGP.z();
-            }
+            BrecHitX[ntrajHit-1] = recHitGP.x();
+            BrecHitY[ntrajHit-1] = recHitGP.y();
+            BrecHitZ[ntrajHit-1] = recHitGP.z();
+            ntrajRecHit++;
             //created by Jongseok Lee <==
             
             gem_chamber_tr2D_eff[index]->Fill(vfat, mRoll);
@@ -1264,12 +1223,10 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
       }
     }
 //cout<<"nev "<<nev<<", nTraj "<<nTraj<<", Theta "<<trajTheta<<", Phi "<<trajPhi<<", X "<<trajX<<", Y "<<trajY<<", Z "<<trajZ<<", NormChi2 "<<NormalizedChi2<<", nTRAJHIT "<<nTRAJHIT<<", nTrajHit "<<nTrajHit<<", nTrajRecHit "<<nTrajRecHit<<", eff "<<double(nTrajRecHit)/nTrajHit;
-//if(nTrajHit>0) 
-//{
-//  cout<<", vfatID ";
-//  for(int nth=0;nth<nTrajHit;nth++) cout<<Bidx[nth]<<" "<<Bivfat[nth]<<" "<<BimRoll[nth]<<", ";
-//}
-//cout<<endl;
+//cout<<"nev "<<nev<<", nTraj "<<nTraj<<", Theta "<<trajTheta<<", Phi "<<trajPhi<<", X "<<trajX<<", Y "<<trajY<<", Z "<<trajZ<<", NormChi2 "<<bestTraj.chiSquared()/float(bestTraj.ndof())<<", nTrajHit "<<nTrajHit<<", nTrajRecHit "<<nTrajRecHit<<", eff "<<double(nTrajRecHit)/nTrajHit<<endl;
+
+//cout<<"nev "<<nev<<", NChi2 "<<bestTraj.chiSquared()/float(bestTraj.ndof())<<", nTH "<<ntrajHit<<", nTRH "<<ntrajRecHit<<", eff "<<double(ntrajRecHit)/ntrajHit<<", bestCh "<<bestTchIdx<<", sd1 "<<chSeedIdx[0]<<", sd2 "<<chSeedIdx[1];
+//if(ntrajHit>0) cout<<", vfatID "; for(int nth=0;nth<ntrajHit;nth++) {cout<<Bidx[nth]<<" "<<Bivfat[nth]<<" "<<BimRoll[nth]<<", ";} cout<<endl;
     
     if ( 11 <= countTC && countTC <= 20 )
     {
@@ -1306,35 +1263,32 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
   //created by Jongseok Lee ==>
   //cout<<"nev "<<nev<<", nTraj "<<nTraj<<endl;
 
-  if(onlyOneBestTraj)
+  for(int i=0;i<ntrajHit;i++)
   {
-    for(int i=0;i<ntrajHit;i++)
+    if(Bidx[i]!=-1 && Bivfat[i]!=-1 && BimRoll[i]!=-1 && Bidx[i]!=chSeedIdx[0] && Bidx[i]!=chSeedIdx[1])
     {
-      if(Bidx[i]!=-1 && Bivfat[i]!=-1 && BimRoll[i]!=-1 && Bidx[i]!=chSeedIdx[0] && Bidx[i]!=chSeedIdx[1])
+      int n1 = BimRoll[i];
+      int n2 = 2-Bivfat[i] + int(2-Bidx[i]/10)*3;
+      int n3 = Bidx[i]%10;
+      hvfatHit_denominator->Fill(n1,n2,n3);
+      vfatI[Bidx[i]][Bivfat[i]][BimRoll[i]] = 1;
+      if(BrecHitX[i]!=0 && BrecHitY[i]!=0 && BrecHitZ[i]!=0)
       {
-        int n1 = BimRoll[i];
-        int n2 = 2-Bivfat[i] + int(2-Bidx[i]/10)*3;
-        int n3 = Bidx[i]%10;
-        hvfatHit_denominator->Fill(n1,n2,n3);
-        vfatI[Bidx[i]][Bivfat[i]][BimRoll[i]] = 1;
-        if(BrecHitX[i]!=0 && BrecHitY[i]!=0 && BrecHitZ[i]!=0)
-        {
-          hvfatHit_numerator->Fill(n1,n2,n3);
-          vfatF[Bidx[i]][Bivfat[i]][BimRoll[i]] = 1;
-        }
-        genHitX[Bidx[i]][Bivfat[i]][BimRoll[i]] = BgenHitX[i];
-        genHitY[Bidx[i]][Bivfat[i]][BimRoll[i]] = BgenHitY[i];
-        genHitZ[Bidx[i]][Bivfat[i]][BimRoll[i]] = BgenHitZ[i];
-        trajHitX[Bidx[i]][Bivfat[i]][BimRoll[i]] = BtrajHitX[i];
-        trajHitY[Bidx[i]][Bivfat[i]][BimRoll[i]] = BtrajHitY[i];
-        trajHitZ[Bidx[i]][Bivfat[i]][BimRoll[i]] = BtrajHitZ[i];
-        floorHitX[Bidx[i]%10] = BfloorHitX[i];
-        floorHitY[Bidx[i]%10] = BfloorHitY[i];
-        floorHitZ[Bidx[i]%10] = BfloorHitZ[i];
-        recHitX[Bidx[i]][Bivfat[i]][BimRoll[i]] = BrecHitX[i];
-        recHitY[Bidx[i]][Bivfat[i]][BimRoll[i]] = BrecHitY[i];
-        recHitZ[Bidx[i]][Bivfat[i]][BimRoll[i]] = BrecHitZ[i];
+        hvfatHit_numerator->Fill(n1,n2,n3);
+        vfatF[Bidx[i]][Bivfat[i]][BimRoll[i]] = 1;
       }
+      genHitX[Bidx[i]][Bivfat[i]][BimRoll[i]] = BgenHitX[i];
+      genHitY[Bidx[i]][Bivfat[i]][BimRoll[i]] = BgenHitY[i];
+      genHitZ[Bidx[i]][Bivfat[i]][BimRoll[i]] = BgenHitZ[i];
+      trajHitX[Bidx[i]][Bivfat[i]][BimRoll[i]] = BtrajHitX[i];
+      trajHitY[Bidx[i]][Bivfat[i]][BimRoll[i]] = BtrajHitY[i];
+      trajHitZ[Bidx[i]][Bivfat[i]][BimRoll[i]] = BtrajHitZ[i];
+      floorHitX[Bidx[i]%10] = BfloorHitX[i];
+      floorHitY[Bidx[i]%10] = BfloorHitY[i];
+      floorHitZ[Bidx[i]%10] = BfloorHitZ[i];
+      recHitX[Bidx[i]][Bivfat[i]][BimRoll[i]] = BrecHitX[i];
+      recHitY[Bidx[i]][Bivfat[i]][BimRoll[i]] = BrecHitY[i];
+      recHitZ[Bidx[i]][Bivfat[i]][BimRoll[i]] = BrecHitZ[i];
     }
   }
 
