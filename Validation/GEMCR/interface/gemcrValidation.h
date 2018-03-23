@@ -26,6 +26,8 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include <TFile.h>
 #include <TTree.h>
+#include <TGraph2D.h>
+
 
 typedef struct tagGPSeed {
   GlobalPoint P1;
@@ -47,6 +49,11 @@ public:
   std::vector<std::string> SuperChamType;
   std::vector<double> vecChamType;
   bool makeTrack, isMC;
+
+  static void line(double t, double *p, double &x, double &y, double &z);
+  static double distance2(double x,double y,double z, double *p);
+  static void SumDistance2(int &, double *, double & sum, double * par, int );
+  //static TGraph2D *gr;
 private:
   const GEMGeometry* GEMGeometry_;
   std::vector<MonitorElement*> gem_chamber_x_y;
@@ -151,7 +158,12 @@ private:
   float genMuY;
   float genMuZ;
 
-  int nRecHit;
+  int nrecHit;
+  int nrecHitGP;
+  const static int maxRecHit = 100;
+  float grecHitX[maxRecHit];
+  float grecHitY[maxRecHit];
+  float grecHitZ[maxRecHit];
 
   bool onlyOneBestTraj = true;
 
@@ -166,8 +178,19 @@ private:
   float trajPy;
   float trajPz;
   int ntrajHit;
+  int ntrajRecHit;
   const static int maxNlayer = 30;
   const static int maxNphi = 3;
+
+  float fitamin;
+  float fitTheta;
+  float fitPhi;
+  float fitX;
+  float fitY;
+  float fitZ;
+  float fitPx;
+  float fitPy;
+  float fitPz;
 
   const static int maxNeta = 8;
   int vfatI[maxNlayer][maxNphi][maxNeta];
