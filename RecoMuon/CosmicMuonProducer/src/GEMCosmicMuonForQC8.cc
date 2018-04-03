@@ -70,7 +70,7 @@ private:
   Trajectory makeTrajectory(TrajectorySeed seed, MuonTransientTrackingRecHit::MuonRecHitContainer &muRecHits, std::vector<GEMChamber> gemChambers, GEMChamber testChamber);
   const GEMGeometry* gemGeom;
   bool checkCrossSeeds = false;
-  bool recHitArrangeOn = true;
+  //bool recHitArrangeOn = true;
 };
 
 GEMCosmicMuonForQC8::GEMCosmicMuonForQC8(const edm::ParameterSet& ps) : iev(0) {
@@ -516,7 +516,7 @@ Trajectory GEMCosmicMuonForQC8::makeTrajectory(TrajectorySeed seed, MuonTransien
     }
     if (tmpRecHit)
     {
-      if(!recHitArrangeOn) consRecHits.push_back(tmpRecHit);
+      //if(!recHitArrangeOn) consRecHits.push_back(tmpRecHit);
       rAndhit[tmpR] = tmpNhit;
       //cout<<"addID "<<tmpRecHit->rawId().chamber()+tmpRecHit->rawId().layer()<<", recHit :	x "<<tmpRecHit->globalPosition().x()<<", y "<<tmpRecHit->globalPosition().y()<<", z "<<tmpRecHit->globalPosition().z()<<endl;
       //GEMDetId hitID(tmpRecHit->rawId());
@@ -529,7 +529,8 @@ Trajectory GEMCosmicMuonForQC8::makeTrajectory(TrajectorySeed seed, MuonTransien
   for(unsigned int i=0;i<rAndhitV.size();i++)
   {
     if(checkCrossSeeds && crossSeeds) cout<<"i "<<i<<", r "<<rAndhitV[i].first<<", nhit "<<rAndhitV[i].second<<endl;
-    if(recHitArrangeOn) consRecHits.push_back(muRecHits[rAndhitV[i].second]);
+    consRecHits.push_back(muRecHits[rAndhitV[i].second]);
+    //if(recHitArrangeOn) consRecHits.push_back(muRecHits[rAndhitV[i].second]);
   }
 
   if (consRecHits.size() <3) return Trajectory();
