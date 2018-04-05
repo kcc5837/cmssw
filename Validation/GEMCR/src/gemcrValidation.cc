@@ -323,7 +323,9 @@ int g_nNumTrajHit = 0;
 int g_nNumTrajHit6 = 0;
 int g_nNumMatched = 0;
 
+double g_dMinX = 100000.0, g_dMaxX = -10000000.0;
 double g_dMinY = 100000.0, g_dMaxY = -10000000.0;
+double g_dMinZ = 100000.0, g_dMaxZ = -10000000.0;
 
 gemcrValidation::~gemcrValidation() {
   printf("res1 : %i\n", g_nEvt);
@@ -335,7 +337,9 @@ gemcrValidation::~gemcrValidation() {
   printf("res7 : %i (g_nNumMatched)\n", g_nNumMatched);
   if(g_nNumTrajHit>0) printf("eff : %f\n", double(g_nNumMatched)/g_nNumTrajHit);
   
+  printf("X range : %lf, %lf\n", g_dMinX, g_dMaxX);
   printf("Y range : %lf, %lf\n", g_dMinY, g_dMaxY);
+  printf("Z range : %lf, %lf\n", g_dMinZ, g_dMaxZ);
 }
 
 
@@ -343,38 +347,44 @@ bool gemcrValidation::isPassedScintillators(GlobalPoint p1, GlobalPoint p2)
 {
   bool isPassedScint = false;
   
-  double ScintilLowerY =  -11.485;
-  double ScintilUpperY =  154.015;
+  double ScintilLowerZ =  -11.485;
+  double ScintilUpperZ =  154.015;
   double ScintilXMin   = -100.0;
   double ScintilXMax   =  100.0;
-  double ScintilZMin   =  -60.56;
-  double ScintilZMax   =   63.0;
+  double ScintilYMin   =  -60.56;
+  double ScintilYMax   =   63.0;
+  //https://brilliant.org/wiki/3d-coordinate-geometry-equation-of-a-line
+  //3D line equation for genMuon (generated track) : (x - genMuX)/gen_px = (y - genMuY)/gen_py = (z - genMuZ)/gen_pz;
+  //if y=y0 then x = genMuX + (y0-genMuY)*(gen_px/gen_py),  z = genMuZ + (y0-genMuY)*(gen_pz/gen_py)
+  //if z=z0 then x = genMuX + (z0-genMuZ)*(gen_px/gen_pz),  y = genMuY + (z0-genMuZ)*(gen_py/gen_pz)
   
   // Finding the X coordinate of the track in the upper and lower scintillator planes : (x)=(m_xy)*(y)+(q_xy), (m_xy)=(x2-x1)/(y2-y1), (q_xy)=x2-(m_xy)*y2
-  double m_xy = ( p2.x() - p1.x() ) / ( p2.y() - p1.y() ) ;
-  double q_xy = p2.x() - m_xy * p2.y() ;
-  double HitXupScint  = m_xy * ScintilUpperY + q_xy ;
-  double HitXlowScint = m_xy * ScintilLowerY + q_xy ;
+  double m_xz = ( p2.x() - p1.x() ) / ( p2.z() - p1.z() ) ;
+  double q_xz = p2.x() - m_xz * p2.z() ;
+  double HitXupScint  = m_xz * ScintilUpperZ + q_xz ;
+  double HitXlowScint = m_xz * ScintilLowerZ + q_xz ;
+  //double HitXupScint  = p1.x() + (ScintilUpperZ - p1.z())*m_xz;
+  //double HitXlowScint = p1.x() + (ScintilLowerZ - p1.z())*m_xz;
   
   // Finding the Z coordinate of the track in the upper and lower scintillator planes : (z)=(m_zy)*(y)+(q_zy), (m_zy)=(z2-z1)/(y2-y1), (q_zy)=z2-(m_zy)*y2
-  double m_zy = ( p2.z() - p1.z() ) / ( p2.y() - p1.y() ) ;
-  double q_zy = p2.z() - m_zy * p2.y() ;
-  double HitZupScint  = m_zy * ScintilUpperY + q_zy ;
-  double HitZlowScint = m_zy * ScintilLowerY + q_zy ;
+  double m_yz = ( p2.y() - p1.y() ) / ( p2.z() - p1.z() ) ;
+  double q_yz = p2.y() - m_yz * p2.z() ;
+  double HitYupScint  = m_yz * ScintilUpperZ + q_yz ;
+  double HitYlowScint = m_yz * ScintilLowerZ + q_yz ;
   
-  if (( ScintilXMin <= HitXupScint  && HitXupScint  <= ScintilXMax ) && ( ScintilZMin  <= HitZupScint  && HitZupScint  <= ScintilZMax ) &&
-      ( ScintilXMin <= HitXlowScint && HitXlowScint <= ScintilXMax ) && ( ScintilZMin  <= HitZlowScint && HitZlowScint <= ScintilZMax ) )
+  if (( ScintilXMin <= HitXupScint  && HitXupScint  <= ScintilXMax ) && ( ScintilYMin  <= HitYupScint  && HitYupScint  <= ScintilYMax ) &&
+      ( ScintilXMin <= HitXlowScint && HitXlowScint <= ScintilXMax ) && ( ScintilYMin  <= HitYlowScint && HitYlowScint <= ScintilYMax ) )
   {
     isPassedScint = true;
   }
   
-  scinUpperHit -> Fill(HitXupScint, HitZupScint, ScintilUpperY);
-  scinLowerHit -> Fill(HitXlowScint, HitZlowScint, ScintilLowerY);
+  scinUpperHit -> Fill(HitXupScint, HitYupScint, ScintilUpperZ);
+  scinLowerHit -> Fill(HitXlowScint, HitYlowScint, ScintilLowerZ);
   
   if  (isPassedScint == true)
   {
-      scinUpperRecHit->Fill(HitXupScint, HitZupScint, ScintilUpperY);
-      scinLowerRecHit->Fill(HitXlowScint, HitZlowScint, ScintilLowerY);
+      scinUpperRecHit->Fill(HitXupScint, HitYupScint, ScintilUpperZ);
+      scinLowerRecHit->Fill(HitXlowScint, HitYlowScint, ScintilLowerZ);
   }
   
   return isPassedScint;
@@ -578,11 +588,11 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     fXGenGP2y = fXGenGP1y + dUnitGen * genMuon->momentum().y();
     fXGenGP2z = fXGenGP1z + dUnitGen * genMuon->momentum().z();
     
-    Float_t fVecX, fVecZ;
+    Float_t fVecX, fVecY;
     int arrnFired[ 32 ] = {0, };
     
-    fVecX = genMuon->momentum().x() / genMuon->momentum().y();
-    fVecZ = genMuon->momentum().z() / genMuon->momentum().y();
+    fVecX = genMuon->momentum().x() / genMuon->momentum().z();
+    fVecY = genMuon->momentum().y() / genMuon->momentum().z();
 
     //created by Jongseok Lee ==>
     gen_px = genMuon->momentum().x();
@@ -603,6 +613,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     //https://brilliant.org/wiki/3d-coordinate-geometry-equation-of-a-line
     //3D line equation for genMuon (generated track) : (x - genMuX)/gen_px = (y - genMuY)/gen_py = (z - genMuZ)/gen_pz;
     //if y=y0 then x = genMuX + (y0-genMuY)*(gen_px/gen_py),  z = genMuZ + (y0-genMuY)*(gen_pz/gen_py)
+    //if z=z0 then x = genMuX + (z0-genMuZ)*(gen_px/gen_pz),  y = genMuY + (z0-genMuZ)*(gen_py/gen_pz)
     for ( GEMRecHitCollection::const_iterator rechit = gemRecHits->begin(); rechit != gemRecHits->end(); ++rechit )
     {
       //int nIdxCh = findIndex((*rechit).gemId());
@@ -628,15 +639,15 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
         nNumCurrFiredCh++;
       }
       
-      Float_t fDiffY = recHitGP.y() - fXGenGP1y;
+      Float_t fDiffZ = recHitGP.z() - fXGenGP1z;
       
-      Float_t fXGenHitX = fXGenGP1x + fDiffY * fVecX;
-      Float_t fXGenHitZ = fXGenGP1z + fDiffY * fVecZ;
+      Float_t fXGenHitX = fXGenGP1x + fDiffZ * fVecX;
+      Float_t fXGenHitY = fXGenGP1y + fDiffZ * fVecY;
 
-      strKeep += TString::Format("  recHit : %i, RECO : (%0.5f, %0.5f, %0.5f) <... GEN : (%0.5f, %0.5f, %0.5f)\n", nIdxCh + 1, recHitGP.x(), recHitGP.z(), recHitGP.y(), fXGenHitX, fXGenHitZ, recHitGP.y());
+      strKeep += TString::Format("  recHit : %i, RECO : (%0.5f, %0.5f, %0.5f) <... GEN : (%0.5f, %0.5f, %0.5f)\n", nIdxCh + 1, recHitGP.x(), recHitGP.z(), recHitGP.y(), fXGenHitX, fXGenHitY, recHitGP.z());
       
-      resYByErrSim->Fill(( recHitGP.z() - fXGenHitZ ) / recHit->localPositionError().yy());
-      gem_chamber_residualY1DSim[ nIdxCh ]->Fill(( recHitGP.z() - fXGenHitZ ) / recHit->localPositionError().yy());
+      resYByErrSim->Fill(( recHitGP.y() - fXGenHitY ) / recHit->localPositionError().yy());
+      gem_chamber_residualY1DSim[ nIdxCh ]->Fill(( recHitGP.y() - fXGenHitY ) / recHit->localPositionError().yy());
       hitYErr->Fill(recHit->localPositionError().yy());
       
       g_nNumRecHit++;
@@ -656,25 +667,25 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
             
             GlobalPoint recHitGP = GEMGeometry_->idToDet((*rechit).gemId())->surface().toGlobal(rechit->localPosition());
             
-            Float_t fDiffY = recHitGP.y() - fXGenGP1y;
+            Float_t fDiffZ = recHitGP.z() - fXGenGP1z;
             
-            Float_t fXGenHitX = fXGenGP1x + fDiffY * fVecX;
-            Float_t fXGenHitZ = fXGenGP1z + fDiffY * fVecZ;
+            Float_t fXGenHitX = fXGenGP1x + fDiffZ * fVecX;
+            Float_t fXGenHitY = fXGenGP1y + fDiffZ * fVecY;
             
             resXSim->Fill(recHitGP.x() - fXGenHitX);
             resXByErrSim->Fill(( recHitGP.x() - fXGenHitX ) / rechit->localPositionError().xx());
             gem_chamber_residualX1DSim[ nIdxCh - 1 ]->Fill(recHitGP.x() - fXGenHitX);
             hitXErr->Fill(rechit->localPositionError().xx());
             
-            resYByErrSim->Fill(( recHitGP.z() - fXGenHitZ ) / rechit->localPositionError().yy());
-            gem_chamber_residualY1DSim[ nIdxCh - 1 ]->Fill(( recHitGP.z() - fXGenHitZ ) / rechit->localPositionError().yy());
+            resYByErrSim->Fill(( recHitGP.y() - fXGenHitY ) / rechit->localPositionError().yy());
+            gem_chamber_residualY1DSim[ nIdxCh - 1 ]->Fill(( recHitGP.y() - fXGenHitY ) / rechit->localPositionError().yy());
             hitYErr->Fill(rechit->localPositionError().yy());
             
             strKeep += TString::Format("  recHit (TCH) : %i (%i), RECO : (%0.5f, %0.5f, %0.5f) <... GEN : (%0.5f, %0.5f, %0.5f)\n", 
-              nIdxCh, nContinueCLS, recHitGP.x(), recHitGP.z(), recHitGP.y(), fXGenHitX, fXGenHitZ, recHitGP.y());
+              nIdxCh, nContinueCLS, recHitGP.x(), recHitGP.y(), recHitGP.z(), fXGenHitX, fXGenHitY, recHitGP.z());
             
             strKeep += TString::Format("                 LOCAL : (%0.5f, %0.5f, %0.5f) ... (%0.5f, %0.5f, %0.5f)\n",
-              tch.surface().position().x(), tch.surface().position().z(), tch.surface().position().y(), 
+              tch.surface().position().x(), tch.surface().position().y(), tch.surface().position().z(), 
               GEMGeometry_->idToDet((*rechit).gemId())->surface().position().x(), 
               GEMGeometry_->idToDet((*rechit).gemId())->surface().position().z(), 
               GEMGeometry_->idToDet((*rechit).gemId())->surface().position().y());
@@ -682,7 +693,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
       }
     }
     
-    aftershots->Fill(fXGenGP1x + 400.0 * fVecX, fXGenGP1z + 400.0 * fVecZ);
+    aftershots->Fill(fXGenGP1x + 400.0 * fVecX, fXGenGP1y + 400.0 * fVecY);
     
     g_nNumFiredCh += nNumCurrFiredCh;
     if ( nNumCurrFiredCh > 6 ) g_nNumFiredChValid += nNumCurrFiredCh;
@@ -729,7 +740,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     gem_chamber_x_y[index]->Fill(rh_l_x, rh_roll);
     gem_chamber_cl_size[index]->Fill(clusterSize, nVfat);
     gem_chamber_bx[index]->Fill(bx,rh_roll);
-    gemcr_g->Fill(-rh_g_X,rh_g_Z,rh_g_Y);
+    gemcr_g->Fill(-rh_g_X,rh_g_Y,rh_g_Z);
     gem_cls_tot->Fill(clusterSize);
     gem_bx_tot->Fill(bx);
     rh1_chamber->Fill(index);
@@ -747,9 +758,9 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
       gem_chamber_digi_CLS[index]->Fill(i,rh_roll);
     }
     
-    float fPGenRecX = fXGenGP1x + ( rh_g_Y - fXGenGP1y ) * genMuon->momentum().x() / genMuon->momentum().y();
-    float fPGenRecZ = fXGenGP1z + ( rh_g_Y - fXGenGP1y ) * genMuon->momentum().z() / genMuon->momentum().y();
-    gemcrGen_g->Fill(-fPGenRecX, fPGenRecZ, rh_g_Y);
+    float fPGenRecX = fXGenGP1x + ( rh_g_Z - fXGenGP1z ) * genMuon->momentum().x() / genMuon->momentum().z();
+    float fPGenRecY = fXGenGP1z + ( rh_g_Z - fXGenGP1z ) * genMuon->momentum().y() / genMuon->momentum().z();
+    gemcrGen_g->Fill(-fPGenRecX, fPGenRecY, rh_g_Z);
   }
   
   for ( int ich = 0 ; ich < n_ch ; ich++ ) {
@@ -967,8 +978,8 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     GlobalPoint trackPCA = ftsAtVtx->position();
     GlobalVector gvecTrack = ftsAtVtx->momentum();
     
-    Float_t fTrackVelX = gvecTrack.x() / gvecTrack.y();
-    Float_t fTrackVelZ = gvecTrack.z() / gvecTrack.y();
+    Float_t fTrackVelX = gvecTrack.x() / gvecTrack.z();
+    Float_t fTrackVelY = gvecTrack.y() / gvecTrack.z();
     
     Float_t fSeedP1x = 0.0, fSeedP1y = 0.0, fSeedP1z = 0.0;
     Float_t fSeedP2x = 0.0, fSeedP2y = 0.0, fSeedP2z = 0.0;
@@ -1024,13 +1035,13 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
       if (!tsosCurrent.isValid()) continue;
       Global3DPoint gtrp = tsosCurrent.freeTrajectoryState()->position();
       Global3DPoint gtrpGEN(
-        fXGenGP1x + ( genMuon->momentum().x() / genMuon->momentum().y() ) * ( gtrp.y() - fXGenGP1y ), 
-        gtrp.y(), 
-        fXGenGP1z + ( genMuon->momentum().z() / genMuon->momentum().y() ) * ( gtrp.y() - fXGenGP1y ));
+        fXGenGP1x + ( genMuon->momentum().x() / genMuon->momentum().z() ) * ( gtrp.z() - fXGenGP1z ), 
+        fXGenGP1y + ( genMuon->momentum().y() / genMuon->momentum().z() ) * ( gtrp.z() - fXGenGP1z ),
+        gtrp.z()); 
       Local3DPoint tlp = bpch.toLocal(gtrp);
       if ( c == 10 ) {fSeedP1x = gtrp.x(); fSeedP1y = gtrp.y(); fSeedP1z = gtrp.z();}
       if ( c == 19 ) {fSeedP2x = gtrp.x(); fSeedP2y = gtrp.y(); fSeedP2z = gtrp.z();}
-      Global3DPoint gtrp2(trackPCA.x() + fTrackVelX * ( gtrp.y() - trackPCA.y() ), gtrp.y(), trackPCA.z() + fTrackVelZ * ( gtrp.y() - trackPCA.y() ));
+      Global3DPoint gtrp2(trackPCA.x() + fTrackVelX * ( gtrp.z() - trackPCA.z() ), trackPCA.y() + fTrackVelY * ( gtrp.z() - trackPCA.z() ), gtrp.z());
       if (!bpch.bounds().inside(tlp)){continue;}
       // modified by Jongseok Lee ==>
       if (ch==tch)
@@ -1124,9 +1135,9 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
           int n3 = idx%10;
           hvfatHit_denominator->Fill(n1,n2,n3);
 
-          genHitX[idx][ivfat][imRoll] = genMuX + (gtrp.y()-genMuY)*(gen_px/gen_py);
-          genHitY[idx][ivfat][imRoll] = gtrp.y();
-          genHitZ[idx][ivfat][imRoll] = genMuZ + (gtrp.y()-genMuY)*(gen_pz/gen_py);
+          genHitX[idx][ivfat][imRoll] = genMuX + (gtrp.z()-genMuZ)*(gen_px/gen_pz);
+          genHitY[idx][ivfat][imRoll] = genMuY + (gtrp.z()-genMuZ)*(gen_py/gen_pz);
+          genHitZ[idx][ivfat][imRoll] = gtrp.z();
           trajHitX[idx][ivfat][imRoll] = gtrp.x();
           trajHitY[idx][ivfat][imRoll] = gtrp.y();
           trajHitZ[idx][ivfat][imRoll] = gtrp.z();
@@ -1162,13 +1173,17 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
 
           gem_chamber_th2D_eff[index]->Fill(vfat, mRoll);                
           gem_chamber_thxroll_eff[index]->Fill(tlp.x(), mRoll);
-          gem_chamber_thxy_eff[index]->Fill(tlp.x(), gtrp.z());
-          gemcrTr_g->Fill(-gtrp.x(), gtrp.z(), gtrp.y());
+          gem_chamber_thxy_eff[index]->Fill(tlp.x(), gtrp.y());
+          gemcrTr_g->Fill(-gtrp.x(), gtrp.y(), gtrp.z());
           g_nNumTrajHit++;
           if ( nNumCurrFiredCh == 6 ) g_nNumTrajHit6++;
           
-          if ( g_dMinY > gtrp.z() ) g_dMinY = gtrp.z();
-          if ( g_dMaxY < gtrp.z() ) g_dMaxY = gtrp.z();
+          if ( g_dMinX > gtrp.x() ) g_dMinX = gtrp.x();
+          if ( g_dMaxX < gtrp.x() ) g_dMaxX = gtrp.x();
+          if ( g_dMinY > gtrp.y() ) g_dMinY = gtrp.y();
+          if ( g_dMaxY < gtrp.y() ) g_dMaxY = gtrp.y();
+          if ( g_dMinZ > gtrp.z() ) g_dMinZ = gtrp.z();
+          if ( g_dMaxZ < gtrp.z() ) g_dMaxZ = gtrp.z();
           
           nTrajHit++;
           
@@ -1176,8 +1191,8 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
           {
             gem_chamber_th2D_eff_scint[index]->Fill(vfat, mRoll);                
             gem_chamber_thxroll_eff_scint[index]->Fill(tlp.x(), mRoll);
-            gem_chamber_thxy_eff_scint[index]->Fill(tlp.x(), gtrp.z());
-            gemcrTrScint_g->Fill(-gtrp.x(), gtrp.z(), gtrp.y());
+            gem_chamber_thxy_eff_scint[index]->Fill(tlp.x(), gtrp.y());
+            gemcrTrScint_g->Fill(-gtrp.x(), gtrp.y(), gtrp.z());
           }
           
           double maxR = 99.9;
@@ -1207,7 +1222,7 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
             Local3DPoint hitLP = tmpRecHit->localPosition();
             Global3DPoint recHitGP = tmpRecHit->globalPosition();
             
-            gemcrCf_g->Fill(-recHitGP.x(), recHitGP.z(), recHitGP.y());
+            gemcrCf_g->Fill(-recHitGP.x(), recHitGP.y(), recHitGP.z());
           
             nTrajRecHit++;
 
@@ -1226,17 +1241,17 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
             
             gem_chamber_tr2D_eff[index]->Fill(vfat, mRoll);
             gem_chamber_trxroll_eff[index]->Fill(tlp.x(), mRoll);
-            gem_chamber_trxy_eff[index]->Fill(tlp.x(), gtrp.z());
+            gem_chamber_trxy_eff[index]->Fill(tlp.x(), gtrp.y());
             gem_chamber_local_x[index]->Fill(tlp.x(), hitLP.x());
             gem_chamber_residual[index]->Fill(tlp.x(), hitLP.x() - tlp.x());
             rh3_chamber->Fill(index);
             
             if ( bIsScint )
             {
-              gemcrCfScint_g->Fill(-recHitGP.x(), recHitGP.z(), recHitGP.y());
+              gemcrCfScint_g->Fill(-recHitGP.x(), recHitGP.y(), recHitGP.z());
               gem_chamber_tr2D_eff_scint[index]->Fill(vfat, mRoll);
               gem_chamber_trxroll_eff_scint[index]->Fill(tlp.x(), mRoll);
-              gem_chamber_trxy_eff_scint[index]->Fill(tlp.x(), gtrp.z());
+              gem_chamber_trxy_eff_scint[index]->Fill(tlp.x(), gtrp.y());
               gem_chamber_local_x_scint[index]->Fill(tlp.x(), hitLP.x());
               gem_chamber_residual_scint[index]->Fill(tlp.x(), hitLP.x() - tlp.x());
               rh3_chamber_scint->Fill(index);
@@ -1247,35 +1262,35 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
           } else {
             
             if ( countTC == 17 && mRoll == 6 && vfat == 1 ) {
-              Float_t fVecX, fVecZ;
+              Float_t fVecX, fVecY;
               double dUnitGen = 0.1;
               
-              fVecX = genMuon->momentum().x() / genMuon->momentum().y();
-              fVecZ = genMuon->momentum().z() / genMuon->momentum().y();
+              fVecX = genMuon->momentum().x() / genMuon->momentum().z();
+              fVecY = genMuon->momentum().y() / genMuon->momentum().z();
               
               fXGenGP1x = dUnitGen * genMuon->production_vertex()->position().x();
               fXGenGP1y = dUnitGen * genMuon->production_vertex()->position().y();
               fXGenGP1z = dUnitGen * genMuon->production_vertex()->position().z();
               
-              Float_t fDiffY = gtrp.y() - fXGenGP1y;
-              Float_t fXGenHitX = fXGenGP1x + fDiffY * fVecX;
-              Float_t fXGenHitZ = fXGenGP1z + fDiffY * fVecZ;
+              Float_t fDiffZ = gtrp.z() - fXGenGP1z;
+              Float_t fXGenHitX = fXGenGP1x + fDiffZ * fVecX;
+              Float_t fXGenHitY = fXGenGP1y + fDiffZ * fVecY;
               
               printf("17_2_roll6_VFAT1 : event no. = %i ; # = %i\n", g_nEvt, (int)testRecHits.size());
-              printf("GEN velocity : (%lf, %lf, 1.0)\n", fVecX, fVecZ);
+              printf("GEN velocity : (%lf, %lf, 1.0)\n", fVecX, fVecY);
               printf(strKeep.Data());
               
               printf("reco trj hit : GEN (%lf, %lf, %lf) vs RECO_TRAJ (%lf, %lf, %lf)\n", 
-                fXGenHitX, fXGenHitZ, gtrp.y(), gtrp.x(), gtrp.z(), gtrp.y());
+                fXGenHitX, fXGenHitY, gtrp.z(), gtrp.x(), gtrp.y(), gtrp.z());
               
               for (GEMRecHitCollection::const_iterator hit = gemRecHits->begin(); hit != gemRecHits->end(); ++hit)
               {
                 GlobalPoint hitGP = GEMGeometry_->idToDet((*hit).gemId())->surface().toGlobal(hit->localPosition());
                 printf("    associated recHits : (%lf, %lf, %lf) ; (%lf, %lf, %lf)\n", 
-                  hitGP.x(), hitGP.z(), hitGP.y(), 
-                  trackPCA.x() + fTrackVelX * ( hitGP.y() - trackPCA.y() ), 
-                  hitGP.y(), 
-                  trackPCA.z() + fTrackVelZ * ( hitGP.y() - trackPCA.y() ));
+                  hitGP.x(), hitGP.y(), hitGP.z(), 
+                  trackPCA.x() + fTrackVelX * ( hitGP.z() - trackPCA.z() ), 
+                  trackPCA.y() + fTrackVelY * ( hitGP.z() - trackPCA.z() ),
+                  hitGP.z()); 
               }
             }
           }
@@ -1293,18 +1308,18 @@ void gemcrValidation::analyze(const edm::Event& e, const edm::EventSetup& iSetup
     
     if ( 11 <= countTC && countTC <= 20 )
     {
-      Float_t fSeedDiffY = fSeedP2y - fSeedP1y;
-      Float_t fSeedVelX = ( fSeedP2x - fSeedP1x ) / fSeedDiffY;
-      Float_t fSeedVelZ = ( fSeedP2z - fSeedP1z ) / fSeedDiffY;
+      Float_t fSeedDiffZ = fSeedP2z - fSeedP1z;
+      Float_t fSeedVelX = ( fSeedP2x - fSeedP1x ) / fSeedDiffZ;
+      Float_t fSeedVelY = ( fSeedP2y - fSeedP1y ) / fSeedDiffZ;
       
-      Float_t fSeedVtxX = fSeedP1x + fSeedVelX * ( fXGenGP1y - fSeedP1y );
-      Float_t fSeedVtxZ = fSeedP1z + fSeedVelZ * ( fXGenGP1y - fSeedP1y );
+      Float_t fSeedVtxX = fSeedP1x + fSeedVelX * ( fXGenGP1z - fSeedP1z );
+      Float_t fSeedVtxY = fSeedP1y + fSeedVelY * ( fXGenGP1z - fSeedP1z );
       
-      Float_t fTrackVtxX = trackPCA.x() + fTrackVelX * ( fXGenGP1y - trackPCA.y() );
-      Float_t fTrackVtxZ = trackPCA.z() + fTrackVelZ * ( fXGenGP1y - trackPCA.y() );
+      Float_t fTrackVtxX = trackPCA.x() + fTrackVelX * ( fXGenGP1z - trackPCA.z() );
+      Float_t fTrackVtxY = trackPCA.y() + fTrackVelY * ( fXGenGP1z - trackPCA.z() );
       
       g_resXRTSim->Fill(fTrackVtxX - fSeedVtxX);
-      g_resYRTByErrSim->Fill(fTrackVtxZ - fSeedVtxZ);
+      g_resYRTByErrSim->Fill(fTrackVtxY - fSeedVtxY);
     }
     
     if ( nTestHit != 0 && 1 == 0 )

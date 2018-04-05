@@ -43,10 +43,15 @@ FlatRandomPtGunProducer::~FlatRandomPtGunProducer()
 
 bool myIsMuonPassScint(double dVx, double dVy, double dVz, double dPx, double dPy, double dPz) {
   // To test the drop-down of efficiency at edges, we can set the cut looser
+  //double ScintilXMin = -1000.0;
+  //double ScintilXMax =  1000.0;
+  //double ScintilZMin =  -605.6;
+  //double ScintilZMax =   950.0;
+/*
   double ScintilXMin = -1000.0;
   double ScintilXMax =  1000.0;
-  double ScintilZMin =  -605.6;
-  double ScintilZMax =   950.0;
+  double ScintilZMin = -1000.0;
+  double ScintilZMax =  1000.0;
   
   double ScintilLowerY = -114.85;
   double ScintilUpperY = 1540.15;
@@ -61,6 +66,28 @@ bool myIsMuonPassScint(double dVx, double dVy, double dVz, double dPx, double dP
   
   if (( ScintilXMin <= dXLower && dXLower <= ScintilXMax && ScintilZMin <= dZLower && dZLower <= ScintilZMax ) &&
       ( ScintilXMin <= dXUpper && dXUpper <= ScintilXMax && ScintilZMin <= dZUpper && dZUpper <= ScintilZMax ))
+  {
+    return true;
+  }
+*/
+  double ScintilXMin = -1000.0;
+  double ScintilXMax =  1000.0;
+  double ScintilYMin = -1000.0;
+  double ScintilYMax =  1000.0;
+  
+  double ScintilLowerZ = -114.85;
+  double ScintilUpperZ = 1540.15;
+  
+  double dTLower = ( ScintilLowerZ - dVz ) / dPz;  
+  double dXLower = dVx + dTLower * dPx;
+  double dYLower = dVy + dTLower * dPy;
+  
+  double dTUpper = ( ScintilUpperZ - dVz ) / dPz;
+  double dXUpper = dVx + dTUpper * dPx;
+  double dYUpper = dVy + dTUpper * dPy;
+  
+  if (( ScintilXMin <= dXLower && dXLower <= ScintilXMax && ScintilYMin <= dYLower && dYLower <= ScintilYMax ) &&
+      ( ScintilXMin <= dXUpper && dXUpper <= ScintilXMax && ScintilYMin <= dYUpper && dYUpper <= ScintilYMax ))
   {
     return true;
   }
@@ -96,8 +123,10 @@ void FlatRandomPtGunProducer::produce(Event &e, const EventSetup& es)
    double dVz = CLHEP::RandFlat::shoot(engine, -650.0, 750.0) ;
    HepMC::GenVertex* Vtx = new HepMC::GenVertex(HepMC::FourVector(dVx,dVy,dVz));*/
    double dVx;
-   double dVy = 1540.15; // same Y as the upper scintillator
-   double dVz;
+   //double dVy = 1540.15; // same Y as the upper scintillator
+   //double dVz;
+   double dVy;
+   double dVz = 1540.15; // same Y as the upper scintillator
    HepMC::GenVertex* Vtx = NULL;
 
    // loop over particles
@@ -112,8 +141,10 @@ void FlatRandomPtGunProducer::produce(Event &e, const EventSetup& es)
        while (j < 10000) // j < 10000 to avoid too long computational time
        {
 
+         //dVx = CLHEP::RandFlat::shoot(engine, -1000.0, 1000.0) ;
+         //dVz = CLHEP::RandFlat::shoot(engine, -605.6, 950.0) ;
          dVx = CLHEP::RandFlat::shoot(engine, -1000.0, 1000.0) ;
-         dVz = CLHEP::RandFlat::shoot(engine, -605.6, 950.0) ;
+         dVy = CLHEP::RandFlat::shoot(engine, -1000.0, 1000.0) ;
          
          mom   = CLHEP::RandFlat::shoot(engine, fMinPt, fMaxPt) ;
          phi   = CLHEP::RandFlat::shoot(engine, fMinPhi, fMaxPhi) ;
@@ -134,16 +165,24 @@ void FlatRandomPtGunProducer::produce(Event &e, const EventSetup& es)
              }             
          }
 
+         // mom = total momentum in this code
          px     =  mom*sin(theta)*cos(phi) ;
-         pz     =  mom*sin(theta)*sin(phi) ;
-         py     = -mom*cos(theta) ; // with the - sign, the muons are going downwards: falling from the sky
+         //pz     =  mom*sin(theta)*sin(phi) ;
+         //py     = -mom*cos(theta) ; // with the - sign, the muons are going downwards: falling from the sky
+         // z-axis -> -y-azis
+         // y-axis -> z-axis
 
-         
+         py     =  mom*sin(theta)*sin(phi) ;
+         pz     =  mom*cos(theta) ;
+         // If -3.141592<phi<0 or 3.141592<phi<2.141592*2 then the muons are going downwards (-z direction) : falling from the sky
+
          if ( myIsMuonPassScint(dVx, dVy, dVz, px, py, pz) == true ) break; // muon passing through both the scintillators => valid: the loop can be stopped
          
          j++;
          
        }
+
+       //cout<<"j "<<j<<", mom "<<mom<<", px "<<px<<", py "<<py<<", pz "<<pz<<", theta "<<theta<<", phi "<<phi<<endl;
        
        int PartID = fPartIDs[ip] ;
        const HepPDT::ParticleData* 

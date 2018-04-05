@@ -26,7 +26,7 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include <TFile.h>
 #include <TTree.h>
-#include <TGraph2D.h>
+//#include <TGraph2D.h>
 
 
 typedef struct tagGPSeed {
@@ -50,9 +50,9 @@ public:
   std::vector<double> vecChamType;
   bool makeTrack, isMC;
 
-  static void line(double t, double *p, double &x, double &y, double &z);
-  static double distance2(double x,double y,double z, double *p);
-  static void SumDistance2(int &, double *, double & sum, double * par, int );
+  //static void line(double t, double *p, double &x, double &y, double &z);
+  //static double distance2(double x,double y,double z, double *p);
+  //static void SumDistance2(int &, double *, double & sum, double * par, int );
   //static TGraph2D *gr;
 private:
   const GEMGeometry* GEMGeometry_;

@@ -1,5 +1,6 @@
 {
 
+TString run = "200";
 int drawOn=0;
 int printOn=0;
 int calc_eff_vfat_On=1;
@@ -8,14 +9,10 @@ int setMinimumOn=1;
 int makeTreeOn=1;
 int cal_eff_from_tree_On=0;
 
-TString run = "123";
 TString srcDir = "/afs/cern.ch/work/j/jslee/QC8";
+TString savePngDir = "temp";
 TString filename = "temp_out_reco_MC_"+run;
-//TString srcDir = "/tmp/jslee";
-//TString filename = "temp_out_reco_MC_9_1";
 TFile *f = new TFile(srcDir+"/"+filename+".root");
-//f->cd("gemcrValidation");
-//TTree *tree = (TTree*)f->get("tree");
 
 const int maxNchamber = 15;
 const int maxNlayer = 30;
@@ -36,21 +33,20 @@ TH2D *hvfatEff3[maxNlayer];
 
 TFile *fEff;
 TTree *tree;
-//TFile *fEff = new TFile(srcDir+"/"+filename+"_eff.root","recreate");
-//TTree *tree = new TTree("tree","Tree for efficiency of vfat");
-int vfat=0, layer=0, phi=0, eta=0;
+int vfat=0, layer=0, phi=0, eta=0, flr=0;
 float eff=0, error=0;
 if(makeTreeOn)
 {
 	fEff = new TFile(srcDir+"/"+filename+"_eff.root","recreate");
 	tree = new TTree("tree","Tree for efficiency of vfat");
-	//tree->Branch("",&,"");
+	tree->Branch("floor",&flr,"floor/I");
 	tree->Branch("layer",&layer,"layer/I");
 	tree->Branch("phi",&phi,"phi/I");
 	tree->Branch("eta",&eta,"eta/I");
 	tree->Branch("vfat",&vfat,"vfat/I");
 	tree->Branch("eff",&eff,"eff/F");
 	tree->Branch("error",&error,"error/F");
+	//tree->Branch("",&,"");
 }
 
 f->cd("gemcrValidation");
@@ -156,8 +152,8 @@ for(int i=0;i<maxNlayer;i++)
 		for(int k=0, k2=maxNeta;k<maxNeta;k++, k2--)
 		{
 			int n1 = k; //n1 = 0,1,2,3,4,5,6,7
-			//int n2 = 2-j+(int)(2-i/10)*3; // n2 = 8 7 6 5 4 3 2 1 0 for run106
-			int n2 = j+(int)(2-i/10)*3; // n2 = 6 7 8 3 4 5 0 1 2 for 107<=run<=124
+			int n2 = 2-j+(int)(2-i/10)*3; // n2 = 8 7 6 5 4 3 2 1 0 for run106 and run>=132
+			//int n2 = j+(int)(2-i/10)*3; // n2 = 6 7 8 3 4 5 0 1 2 for 107<=run<=131
 			int n3 = i%10; // n3 = 0,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9
 			//int vfatId = i*100 + j*10 + k;
 			TString cutI = Form("vfatI[%d][%d][%d]==1",i,j,k);
@@ -176,7 +172,7 @@ for(int i=0;i<maxNlayer;i++)
 			{
 				vfatEff[i][j][k] = double(vfatF[i][j][k])/vfatI[i][j][k];
 				vfatEffError[i][j][k] = sqrt(vfatEff[i][j][k]*(1-vfatEff[i][j][k])/vfatI[i][j][k]);
-				//cout<<"i "<<i<<", j "<<j<<", k "<<k<<", vfatF "<<vfatF[i][j][k]<<", vfatI "<<vfatI[i][j][k]<<", eff "<<vfatEff[i][j][k]<<" +- "<<vfatEffError[i][j][k]<<endl;
+				cout<<"i "<<i<<", j "<<j<<", k "<<k<<", vfatF "<<vfatF[i][j][k]<<", vfatI "<<vfatI[i][j][k]<<", eff "<<vfatEff[i][j][k]<<" +- "<<vfatEffError[i][j][k]<<endl;
 
 				if(maxVfatEff < vfatEff[i][j][k]) maxVfatEff = vfatEff[i][j][k];
 				if(minVfatEff > vfatEff[i][j][k]) minVfatEff = vfatEff[i][j][k];
@@ -186,15 +182,16 @@ for(int i=0;i<maxNlayer;i++)
 //					layer = i;
 //					phi = j;
 //					eta = k;
-					n2 = 2-j+(int)(2-i/10)*3; //for 107<=run<=124
+//					n2 = 2-j+(int)(2-i/10)*3; //for 107<=run<=131
 					layer = n3;
 					phi = n2;
 					eta = n1;
+					flr = layer%10;
 					eff = vfatEff[i][j][k];
 					error = vfatEffError[i][j][k];
 					vfat++;
 					tree->Fill();
-					cout<<"n3 "<<n3<<", n2 "<<n2<<", n1 "<<n1<<", vfatF "<<vfatF[i][j][k]<<", vfatI "<<vfatI[i][j][k]<<", eff "<<vfatEff[i][j][k]<<" +- "<<vfatEffError[i][j][k]<<endl;
+					//cout<<"n3 "<<n3<<", n2 "<<n2<<", n1 "<<n1<<", vfatF "<<vfatF[i][j][k]<<", vfatI "<<vfatI[i][j][k]<<", eff "<<vfatEff[i][j][k]<<" +- "<<vfatEffError[i][j][k]<<endl;
 				}
 			}
 
@@ -218,6 +215,7 @@ for(int i=0;i<maxNlayer;i++)
 			if(minVfatNumerator > vfatF[i][j][k]) minVfatNumerator = vfatF[i][j][k];			
 			if(maxVfatDenominator < vfatI[i][j][k]) maxVfatDenominator = vfatI[i][j][k];			
 			if(minVfatDenominator > vfatI[i][j][k]) minVfatDenominator = vfatI[i][j][k];			
+			//cout<<"i "<<i<<", j "<<j<<", k "<<k<<", vfatF "<<vfatF[i][j][k]<<", vfatI "<<vfatI[i][j][k]<<", eff "<<vfatEff[i][j][k]<<" +- "<<vfatEffError[i][j][k]<<", maxVfatNumerator "<<maxVfatNumerator<<", minVfatNumerator "<<minVfatNumerator<<", maxVfatDenominator "<<maxVfatDenominator<<", minVfatDenominator "<<minVfatDenominator<<endl;
 
 			nvfat++;
 		}
@@ -228,19 +226,19 @@ for(int i=0;i<maxNlayer;i++)
 		hvfatEff[i]->Draw();
 		hvfatEff[i]->Fit("pol0");
 //		func->Draw("same");
-		png = Form(srcDir+"/png/eff_VS_vfat_of_chamber%d_layer%d.png",nch*2+1,i%2+1);
+		png = Form(savePngDir+"/eff_VS_vfat_of_chamber%d_layer%d.png",nch*2+1,i%2+1);
 		if(printOn) c1->Print(png);
 
 		c2->cd();
 		hvfatEff2[i]->Draw("colz text");
-		png = Form(srcDir+"/png/eff_VS_vfat_of_chamber%d_layer%d_2D.png",nch*2+1,i%2+1);
+		png = Form(savePngDir+"/eff_VS_vfat_of_chamber%d_layer%d_2D.png",nch*2+1,i%2+1);
 		if(printOn) c2->Print(png);
 
 		hvfatNumerator[i]->Draw("colz text");
-		png = Form(srcDir+"/png/eff_VS_vfat_of_chamber%d_layer%d_Numerator.png",nch*2+1,i%2+1);
+		png = Form(savePngDir+"/eff_VS_vfat_of_chamber%d_layer%d_Numerator.png",nch*2+1,i%2+1);
 		if(printOn) c2->Print(png);
 		hvfatDenominator[i]->Draw("colz text");
-		png = Form(srcDir+"/png/eff_VS_vfat_of_chamber%d_layer%d_Denominator.png",nch*2+1,i%2+1);
+		png = Form(savePngDir+"/eff_VS_vfat_of_chamber%d_layer%d_Denominator.png",nch*2+1,i%2+1);
 		if(printOn) c2->Print(png);
 	}
 	cutLayerI = Form("vfatI[%d]==1",i);
@@ -276,7 +274,7 @@ for(int i=0;i<maxNlayer;i++)
 	{
 		c1->cd();
 		hlayerHitMul[i]->Draw();
-		png = Form(srcDir+"/png/hit_multiplicity_of_chamber%d_layer%d.png",nch*2+1,i%2+1);
+		png = Form(savePngDir+"/hit_multiplicity_of_chamber%d_layer%d.png",nch*2+1,i%2+1);
 		if(printOn) c1->Print(png);
 
 		int maxHitMul = 0;
@@ -325,7 +323,7 @@ for(int i=0;i<maxNlayer;i++)
 		{
 			c1->cd();
 			hchamberHitMul[nch]->Draw();
-			png = Form(srcDir+"/png/hit_multiplicity_of_chamber%d.png",nch*2+1);
+			png = Form(savePngDir+"/hit_multiplicity_of_chamber%d.png",nch*2+1);
 			if(printOn) c1->Print(png);
 
 			int maxHitMul = 0;
@@ -350,18 +348,18 @@ for(int i=0;i<maxNlayer;i++) if(drawOn && calc_eff_vfat_On)
 	hvfatEff2[i]->SetMaximum(maxVfatEff + (maxVfatEff-minVfatEff)*0.05);
 	hvfatEff2[i]->SetMinimum(minVfatEff - (maxVfatEff-minVfatEff)*0.05);
 	hvfatEff2[i]->Draw("colz");
-	png = Form(srcDir+"/png/eff_VS_vfat_of_chamber%d_layer%d_fixRange_2D.png",(i/2)*2+1,i%2+1);
+	png = Form(savePngDir+"/eff_VS_vfat_of_chamber%d_layer%d_fixRange_2D.png",(i/2)*2+1,i%2+1);
 	if(printOn) c2->Print(png);
 
 	hvfatNumerator[i]->SetMaximum(maxVfatNumerator + (maxVfatNumerator-minVfatNumerator)*0.05);
 	hvfatNumerator[i]->SetMinimum(minVfatNumerator - (maxVfatNumerator-minVfatNumerator)*0.05);
 	hvfatNumerator[i]->Draw("colz");
-	png = Form(srcDir+"/png/eff_VS_vfat_of_chamber%d_layer%d_fixRange_Numerator.png",(i/2)*2+1,i%2+1);
+	png = Form(savePngDir+"/eff_VS_vfat_of_chamber%d_layer%d_fixRange_Numerator.png",(i/2)*2+1,i%2+1);
 	if(printOn) c2->Print(png);
 	hvfatDenominator[i]->SetMaximum(maxVfatDenominator + (maxVfatDenominator-minVfatDenominator)*0.05);
 	hvfatDenominator[i]->SetMinimum(minVfatDenominator - (maxVfatDenominator-minVfatDenominator)*0.05);
 	hvfatDenominator[i]->Draw("colz");
-	png = Form(srcDir+"/png/eff_VS_vfat_of_chamber%d_layer%d_fixRange_Denominator.png",(i/2)*2+1,i%2+1);
+	png = Form(savePngDir+"/eff_VS_vfat_of_chamber%d_layer%d_fixRange_Denominator.png",(i/2)*2+1,i%2+1);
 	if(printOn) c2->Print(png);
 }
 */
@@ -371,57 +369,69 @@ if(drawOn)
 	c1->cd();
 	hlayerEff->Draw();
 //	hlayerEff->Fit("pol0");
-	png =srcDir+"/png/eff_VS_layer.png";
+	png =savePngDir+"/eff_VS_layer.png";
 	if(printOn) c1->Print(png);
 	hchamberEff->Draw();
 //	hchamberEff->Fit("pol0");
-	png = srcDir+"/png/eff_VS_chamber.png";
+	png = savePngDir+"/eff_VS_chamber.png";
 	if(printOn) c1->Print(png);
 
 	c2->cd();
 	hlayerI2->Draw("colz text");
-	png =srcDir+"/png/eff_VS_layer_2D_denominator.png";
+	png =savePngDir+"/eff_VS_layer_2D_denominator.png";
 	if(printOn) c2->Print(png);
 	hlayerF2->Draw("colz text");
-	png =srcDir+"/png/eff_VS_layer_2D_numerator.png";
+	png =savePngDir+"/eff_VS_layer_2D_numerator.png";
 	if(printOn) c2->Print(png);
 	hlayerEff2->Draw("colz text");
-	png =srcDir+"/png/eff_VS_layer_2D.png";
+	png =savePngDir+"/eff_VS_layer_2D.png";
 	if(printOn) c2->Print(png);
 
 	hchamberI2->Draw("colz text");
-	png = srcDir+"/png/eff_VS_chamber_2D_denominator.png";
+	png = savePngDir+"/eff_VS_chamber_2D_denominator.png";
 	if(printOn) c2->Print(png);
 	hchamberF2->Draw("colz text");
-	png = srcDir+"/png/eff_VS_chamber_2D_numerator.png";
+	png = savePngDir+"/eff_VS_chamber_2D_numerator.png";
 	if(printOn) c2->Print(png);
 	hchamberEff2->Draw("colz text");
-	png = srcDir+"/png/eff_VS_chamber_2D.png";
+	png = savePngDir+"/eff_VS_chamber_2D.png";
 	if(printOn) c2->Print(png);
 }
 
 TCanvas *c3 = new TCanvas("c3","c3",700,500);
 fEff->cd();
-tree->Draw("eff>>h1(40,0.9,1)");
-h1->SetTitle("number of vfats VS efficiency");
+//tree->Draw("eff>>h1(40,0.9,1)");
+int nBad = tree->GetEntries("eff<0.97");
+cout<<"number of bad vfats with eff<0.97 : "<<nBad<<endl;
+//tree->Draw("eff>>h1(40,0.96,0.99)");
+tree->Draw("eff>>h1(40,0.80.1.05)");
+htitle = Form("number of vfats VS efficiency (nBadVfats : %d)",nBad);
+h1->SetTitle(htitle);
 h1->GetXaxis()->SetTitle("efficiency");
 h1->GetYaxis()->SetTitle("number of vfats");
 h1->Draw();
-png = "temp/run"+run+"_number_of_vfats_VS_efficiency02.png";
+png = savePngDir+"/run"+run+"_number_of_vfats_VS_efficiency02.png";
 c3->Print(png);
-tree->Draw("eff>>h2(40,0.9,1)","phi==2||phi==6"); //for run106 and 107<=run<=124
-//tree->Draw("eff>>h2(40,0.9,1)","phi==0||phi==8"); //for 107<=run<=124
+//tree->Draw("eff>>h2(40,0.9,1)","phi==2||phi==6"); //for run106 and 107<=run<=131
+//tree->Draw("eff>>h2(40,0.9,1)","phi==0||phi==8"); //for run>=132
+//tree->Draw("eff>>h2(40,0.9,1)","(layer==0||layer==9||layer==10||layer==19||layer==20||layer==29)&&(eta==0||eta==7)"); //for run==133
+//tree->Draw("eff>>h2(40,0.9,1)","(floor==0||floor==9)&&(eta==0||eta==7)"); //for run==133
+//tree->Draw("eff>>h2(40,0.96,0.99)","(floor==0||floor==9)&&(eta==0||eta==7)"); //for run==133
+//tree->Draw("eff>>h2(40,0.80,1.05)","(floor==0||floor==9)&&(eta==0||eta==7)"); //for run==133
+tree->Draw("eff>>h2(40,0.80,1.05)","(eta==0||eta==7)"); //for run==133
 h2->SetLineColor(2);
 h1->Draw();
 h2->Draw("same");
 TLegend *leg = new TLegend(0.20,0.65,0.70,0.85);
 leg->AddEntry(h1,"all vfats","l");
 //leg->AddEntry(h2,"vfats at the edge of QC8","l");
-leg->AddEntry(h2,"overlapped vfats under center chamber","l");
+//leg->AddEntry(h2,"overlapped vfats under center chamber","l");
+//leg->AddEntry(h2,"vfats in i#eta=1 or 8 when floor=0 and 9","l");
+leg->AddEntry(h2,"vfats in i#eta=1 or 8","l");
 leg->Draw();
-png = "temp/run"+run+"_number_of_vfats_VS_efficiency01.png";
+png = savePngDir+"/run"+run+"_number_of_vfats_VS_efficiency01.png";
 c3->Print(png);
-//png = srcDir+"/png/eff_VS_chamber_2D.png";
+//png = savePngDir+"/eff_VS_chamber_2D.png";
 //c3->Print(png);
 
 TCanvas *c4 = new TCanvas("c4","c4",700,500);
@@ -429,6 +439,13 @@ c4->SetRightMargin(0.15);
 //TCanvas *c5[2];
 TCanvas *c5 = new TCanvas("c5","c5",1442,437*2);
 c5->Divide(3,4,0,0);
+
+TString TB[2] = {"B","T"};
+
+TLine *line1 = new TLine(maxNphi*1+1,1,maxNphi*1+1,maxNeta+1);
+TLine *line2 = new TLine(maxNphi*2+1,1,maxNphi*2+1,maxNeta+1);
+line1->SetLineWidth(2);
+line2->SetLineWidth(2);
 
 for(int i=0;i<maxNlayer/3;i++)
 {
@@ -439,7 +456,11 @@ for(int i=0;i<maxNlayer/3;i++)
 		// 2100/36.97cm=56.8028/cm, 1000/17.15cm=58.3090/cm ==> 25.4cm - 1442.79, 7.5cm - 437.318
 //	}
 	hname = Form("hvfatEff3_%d",i);
-	htitle = Form("Efficiency VS VFAT (floor%d)",i);
+	//htitle = Form("Efficiency VS VFAT (floor%d)",i);
+	//htitle = Form("Efficiency VS VFAT (floor%d, ROW%d/",i,(i/2)+1);
+	htitle = Form("Efficiency VS VFAT (%d/X/",(i/2)+1)+TB[i%2]+")";
+        //if(i%2==0) htitle += "B)";
+	//else htitle += "T)";
 	hvfatEff3[i] = new TH2D(hname,htitle,maxNphi*3,1,maxNphi*3+1,maxNeta,1,maxNeta+1);
 	hvfatEff3[i]->GetXaxis()->SetTitle("ith-#phi");
 	hvfatEff3[i]->GetYaxis()->SetTitle("ith-#eta");
@@ -457,7 +478,9 @@ for(int i=0;i<maxNlayer/3;i++)
 	}
 	c4->cd();
 	hvfatEff3[i]->Draw("colz text");
-	png = "temp/run"+run+Form("_eff_VS_vfat_floor%d.png",i);
+	line1->Draw();
+	line2->Draw();
+	png = savePngDir+"/run"+run+Form("_eff_VS_vfat_floor%d.png",i);
 	c4->Print(png);
 
 //	int n0 = 11-i;
@@ -470,22 +493,39 @@ for(int i=0;i<maxNlayer/3;i++)
 //	hvfatEff3[i]->Draw("colz");
 //	if(i%5==4)
 //	{
-//		png = "temp/run"+run+Form("_eff_VS_vfat_all0%d.png",i/5+1);
+//		png = savePngDir+"/run"+run+Form("_eff_VS_vfat_all0%d.png",i/5+1);
 //		c5[i/5]->Print(png);
 //	}
 }
+
 gStyle->SetTitleFontSize(0.1);
+line1->SetLineWidth(1);
+line2->SetLineWidth(1);
 for(int i=0;i<maxNlayer/3;i++)
 {
 	int n0 = 11-i;
 	if(i>=5) n0--;
 	c5->cd(n0)->SetRightMargin(0.15);
-	htitle = Form("floor%d",i);
+	//htitle = Form("floor%d",i);
+	htitle = Form("%d/X/",(i/2)+1)+TB[i%2];;
+        //if(i%2==0) htitle += "B)";
+	//else htitle += "T)";
 	hvfatEff3[i]->SetTitle(htitle);
 	hvfatEff3[i]->Draw("colz");
+
+	//for bug fix at line width in ROOT
+//	if(n0%3==1) line1->SetLineWidth(5);
+//	else line1->SetLineWidth(2);
+//	if(n0%3==0) line1->SetLineWidth(5);
+//	else line1->SetLineWidth(2);
+
+	//if(n0==10) line1->SetLineWidth(5);
+	//else line1->SetLineWidth(2);
+	line1->Draw();
+	line2->Draw();
 }
 c5->cd();
-png = "temp/run"+run+"_eff_VS_vfat_AllInOne.png";
+png = savePngDir+"/run"+run+"_eff_VS_vfat_AllInOne.png";
 c5->Print(png);
 
 if(makeTreeOn)
@@ -494,6 +534,17 @@ if(makeTreeOn)
 	tree->Write();
 	fEff->Close();
 }
+
+f->cd("gemcrValidation");
+double nev1 = hev->GetBinContent(1);
+double nev2 = hev->GetBinContent(2);
+double eff1 = nev2/nev1;
+double eff2 = minVfatDenominator/nev1;
+cout<<"nev1 "<<hev->GetBinContent(1)<<endl; //good event ratio
+cout<<"nev2 "<<hev->GetBinContent(2)<<endl; //min hits per triggered event
+cout<<"eff1 "<<eff1<<endl;
+cout<<"eff2 "<<eff2<<endl;
+
 
 }
 
