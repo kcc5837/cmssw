@@ -12,7 +12,8 @@
 </ConstantsSection>
 
 <RotationSection label="gembox.xml">
-<RotationByAxis name="RotXTypeA" axis="x" angle="90*deg"/>
+<Rotation name="RotTypeA" phiX="180*deg" thetaX="90*deg" phiY="90*deg" thetaY="0*deg" phiZ="90*deg" thetaZ="90*deg"/>
+<Rotation name="RotTypeC" phiX="(180 - 2 * 5.06289)*deg" thetaX="90*deg" phiY="90*deg" thetaY="0*deg" phiZ="(90 - 2 * 5.06289)*deg" thetaZ="90*deg"/>
 </RotationSection>
 
 <PosPartSection label="gembox.xml">
@@ -20,13 +21,13 @@
   <PosPart copyNumber="11">
     <rParent name="gembox:GEMBox"/>
     <rChild name="gem11:GEMBox11L"/>
-    <rRotation name="RotXTypeA" />
+    <rRotation name="RotTypeA" />
     <Translation x="0*fm" y="0*fm" z="1*[separation]" />
   </PosPart>
   <PosPart copyNumber="12">
     <rParent name="gembox:GEMBox"/>
     <rChild name="gem11:GEMBox11L"/>
-    <rRotation name="RotXTypeA" />
+    <rRotation name="RotTypeA" />
     <Translation x="0*fm" y="0*fm" z="1*[separation]+[dyChamber]" />
   </PosPart>
   
