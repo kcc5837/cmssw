@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<DDDefinition xmlns="http://www.cern.ch/cms/DDL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.cern.ch/cms/DDL ../../../../DetectorDescription/Schema/DDLSchema.xsd">
+
+<ConstantsSection label="gembox.xml" eval="true">
+  <Constant name="layers"     value="5"/>
+  <Constant name="separation" value="23*cm"/>
+  <Constant name="dyChamber"  value="3.47*cm"/>
+  <Constant name="dxChamber"  value="44.5*cm"/>
+  <Constant name="dyBox"      value="2*([layers]*[separation]/2+10.0*cm)"/>
+  <Constant name="dxBox"      value="3*([dxChamber]+5)*cm"/>
+  <Constant name="dzBox"      value="200*cm"/>
+  <Constant name="sx"         value="0"/>
+  <Constant name="sy"         value="0"/>
+  <Constant name="sz"         value="0"/>
+  <Constant name="rx"         value="0"/>
+  <Constant name="ry"         value="0"/>
+  <Constant name="rz"         value="0"/>
+</ConstantsSection>
+
+<RotationSection label="gembox.xml">
+  <Rotation name="RotTypeA" phiX="180*deg" thetaX="90*deg" phiY="90*deg" thetaY="0*deg" phiZ="90*deg" thetaZ="90*deg"/>
+  <Rotation name="RotTypeC" phiX="(180 - 2 * 5.06289)*deg" thetaX="90*deg" phiY="90*deg" thetaY="0*deg" phiZ="(90 - 2 * 5.06289)*deg" thetaZ="90*deg"/>
+  <Rotation name="RotTypeX" phiX="180*deg" thetaX="90*deg" phiY="270*deg" thetaY="[rx]*deg" phiZ="90*deg" thetaZ="(90 - [rx])*deg"/>
+  <Rotation name="RotTypeY" phiX="180*deg" thetaX="(90 - [ry])*deg" phiY="0*deg" thetaY="[ry]*deg" phiZ="90*deg" thetaZ="90*deg"/>
+  <Rotation name="RotTypeZ" phiX="(180 + [rz])*deg" thetaX="90*deg" phiY="90*deg" thetaY="0*deg" phiZ="(90 + [rz])*deg" thetaZ="90*deg"/>
+</RotationSection>
+
+<PosPartSection label="gembox.xml">
+
+  <PosPart copyNumber="19">
+    <rParent name="gembox:GEMBox"/>
+    <rChild name="gem11:GEMBox11L"/>
+    <rRotation name="RotTypeA" />
+    <Translation x="[sx]*cm" y="[sy]*cm" z="5*[separation]+[sz]*cm" />
+  </PosPart>
+  <PosPart copyNumber="20">
+    <rParent name="gembox:GEMBox"/>
+    <rChild name="gem11:GEMBox11L"/>
+    <rRotation name="RotTypeA" />
+    <Translation x="[sx]*cm" y="[sy]*cm" z="5*[separation]+[dyChamber]+[sz]*cm" />
+  </PosPart>
+  
+</PosPartSection>
+
+</DDDefinition>
